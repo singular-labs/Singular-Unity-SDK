@@ -1,8 +1,8 @@
 //
 //  SingularStateWrapper.m
-//  Unity-iPhone
+//  Singular
 //
-//  Created by Eyal Rabinovich on 16/04/2019.
+//  Copyright © Singular Inc. All rights reserved.
 //
 
 #import "SingularStateWrapper.h"

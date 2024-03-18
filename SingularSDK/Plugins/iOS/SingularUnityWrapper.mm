@@ -2,6 +2,8 @@
 //  SingularUnityWrapper.mm
 //  Singular
 //
+//  Copyright © Singular Inc. All rights reserved.
+//
 
 #import "Singular.h"
 #import "SingularStateWrapper.h"
