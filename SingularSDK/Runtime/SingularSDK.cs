@@ -962,7 +962,7 @@ namespace Singular
             Debug.Log(string.Format("SingularSDK SingularDeviceAttributionCallback called! message='{0}'",
                 handlerParamsJson));
 
-            if (handlerParamsJson != null)
+            if (registeredDeviceAttributionCallbackHandler != null && handlerParamsJson != null)
             {
                 Dictionary<string, object> attributes =
                     JsonConvert.DeserializeObject<Dictionary<string, object>>(handlerParamsJson);
@@ -1038,14 +1038,11 @@ namespace Singular
             {
                 if (registeredSingularLinkHandler != null)
                 {
-
                     registeredSingularLinkHandler.OnSingularLinkResolved(instance.resolvedSingularLinkParams);
                     instance.resolvedSingularLinkParams = null;
-
                 }
                 else if (registeredDDLHandler != null)
                 {
-
                     if (ddlTimeoutSec <= 0)
                     {
                         ddlTimeoutSec = DEFAULT_DDL_TIMEOUT;
@@ -1139,8 +1136,7 @@ namespace Singular
         }
 
         #endregion // end sdid
-
-
+        
 #if UNITY_5_3_OR_NEWER && UNITY_PURCHASING
 
     public static void InAppPurchase(IEnumerable<Product> products, Dictionary<string, object> attributes, bool isRestored
