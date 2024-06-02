@@ -6,7 +6,7 @@
 //
 
 #import "SingularStateWrapper.h"
-#import "SingularLinkParams.h"
+#import <Singular/SingularLinkParams.h>
 
 @implementation SingularStateWrapper
 

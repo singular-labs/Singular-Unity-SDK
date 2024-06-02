@@ -26,7 +26,7 @@ namespace Singular
         private static bool Initialized = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION = "5.0.0";
+        private const string UNITY_VERSION = "5.1.0";
         
         // ios-only:
         [Obsolete]

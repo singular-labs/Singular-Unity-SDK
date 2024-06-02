@@ -46,9 +46,8 @@ public class SingularPostBuild
         pbxProject.AddFrameworkToProject(targetGuid, "AdSupport.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "Webkit.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "StoreKit.framework", false);
-        pbxProject.AddFrameworkToProject(targetGuid, "AdServices.framework", true);
-
-
+        pbxProject.AddFrameworkToProject(targetGuid, "AdServices.framework", true); // optional=true
+        
         // Add .dylib
         pbxProject.AddFileToBuild(targetGuid, pbxProject.AddFile("usr/lib/libsqlite3.0.tbd", "Frameworks/libsqlite3.0.tbd", PBXSourceTree.Sdk));
         pbxProject.AddFileToBuild(targetGuid, pbxProject.AddFile("usr/lib/libz.tbd", "Frameworks/libz.tbd", PBXSourceTree.Sdk));
@@ -64,10 +63,14 @@ public class SingularPostBuild
 
 public class SingularPostBuild: IPostGenerateGradleAndroidProject
 {
-    public const string ACCESS_NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE";
-    public const string INTERNET = "android.permission.INTERNET";
+    public int callbackOrder { get { return 1; } }
 
     public void OnPostGenerateGradleAndroidProject(string basePath)
+    {
+        ModifyAndroidManifestXmlFile(basePath);
+    }
+    
+    private void ModifyAndroidManifestXmlFile(string basePath)
     {
         string appManifestPath = Path.Combine(basePath, "src/main/AndroidManifest.xml");
 
@@ -76,26 +79,26 @@ public class SingularPostBuild: IPostGenerateGradleAndroidProject
         manifestFile.Load(appManifestPath);
 
         // Add needed permissions if they are missing.
-        addPermissions(manifestFile);
+        AddPermissions(manifestFile);
 
         manifestFile.Save(appManifestPath);
 
         // Clean the manifest file.
-        cleanManifestFile(appManifestPath);
+        CleanManifestFile(appManifestPath);
     }
 
-    public int callbackOrder { get { return 1; } }
-
-    static void addPermissions(XmlDocument manifest)
+    static void AddPermissions(XmlDocument manifest)
     {
         List<string> existingPermissions = new List<string>();
 
         XmlElement manifestRoot = manifest.DocumentElement;
 
+        string USES_PERMISSION_ELEMENT = "uses-permission";
+        
         // Check if permissions are already there.
         foreach (XmlNode node in manifestRoot.ChildNodes)
         {
-            if (node.Name == "uses-permission")
+            if (node.Name == USES_PERMISSION_ELEMENT)
             {
                 foreach (XmlAttribute attribute in node.Attributes)
                 {
@@ -104,22 +107,28 @@ public class SingularPostBuild: IPostGenerateGradleAndroidProject
             }
         }
 
-        if (!existingPermissions.Contains(INTERNET))
+        string[] permissionsToAdd = new[]
         {
-            XmlElement element = manifest.CreateElement("uses-permission");
-            element.SetAttribute("android__name", INTERNET);
-            manifestRoot.AppendChild(element);
-        }
+            "android.permission.ACCESS_NETWORK_STATE",
+            "android.permission.INTERNET",
+            "BIND_GET_INSTALL_REFERRER_SERVICE",
+            "com.android.vending.CHECK_LICENSE",
+            "com.google.android.gms.permission.AD_ID"
+        };
 
-        if (!existingPermissions.Contains(ACCESS_NETWORK_STATE))
+        string ANDROID_NAME_ATTRIBUTE = "android__name"; // see doc inside below function: cleanManifestFile
+        foreach (string permission in permissionsToAdd)
         {
-            XmlElement element = manifest.CreateElement("uses-permission");
-            element.SetAttribute("android__name", ACCESS_NETWORK_STATE);
-            manifestRoot.AppendChild(element);
+            if (!existingPermissions.Contains(permission))
+            {
+                XmlElement element = manifest.CreateElement(USES_PERMISSION_ELEMENT);
+                element.SetAttribute(ANDROID_NAME_ATTRIBUTE, permission);
+                manifestRoot.AppendChild(element);
+            }
         }
     }
 
-    static void cleanManifestFile(String manifestPath)
+    static void CleanManifestFile(String manifestPath)
     {
         // Due to XML writing issue with XmlElement methods which are unable
         // to write "android:[param]" string, we have wrote "android__[param]" string instead.

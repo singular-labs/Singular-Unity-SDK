@@ -1,6 +1,6 @@
 #import "UnityAppController.h"
 #import "SingularStateWrapper.h"
-#import "Singular.h"
+#import <Singular/Singular.h>
 #import <objc/runtime.h>
 
 @implementation UnityAppController (SingularSwizzledAppController)
