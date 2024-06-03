@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "SingularLinkParams.h"
+#import <Singular/SingularLinkParams.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

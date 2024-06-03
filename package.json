@@ -1,13 +1,17 @@
 {
-	"name": "singular-unity-package",
-	"version": "5.0.0",
-	"displayName": "Singular",
-	"description": "Singular Unity Package",
-	"type": "library",
-	"homepage": "https://www.singular.net",
-	"license": "MIT",
-	"unity": "2019.4",
-	"dependencies": {
-	    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  "name": "singular-unity-package",
+  "version": "5.1.0",
+  "displayName": "Singular",
+  "description": "Singular Unity Package",
+  "type": "library",
+  "homepage": "https://www.singular.net",
+  "license": "MIT",
+  "author": {
+    "name": "Singular Labs",
+    "url": "https://github.com/singular-labs/Singular-Unity-SDK"
+  },
+  "unity": "2019.4",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
 }
