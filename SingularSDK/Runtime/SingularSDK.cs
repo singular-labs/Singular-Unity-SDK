@@ -22,7 +22,7 @@ namespace Singular
         public bool   InitializeOnAwake = true;
         
         private static SingularSDK instance = null;
-        private static bool Initialized = false;
+        public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
         private const string UNITY_VERSION = "5.1.2";
