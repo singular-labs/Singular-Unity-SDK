@@ -404,22 +404,45 @@ extern "C" {
     }
     
     // Revenue methods
-    void Revenue_(const char* currency, double amount){
+    void Revenue_(const char* currency, double amount) {
         [Singular revenue:[NSString stringWithUTF8String:currency] amount:amount];
     }
     
-    void CustomRevenue_(const char* eventName, const char* currency, double amount){
+    void CustomRevenue_(const char* eventName, const char* currency, double amount) {
         [Singular customRevenue:[NSString stringWithUTF8String:eventName] currency:[NSString stringWithUTF8String:currency] amount:amount];
     }
     
-    void RevenueWithAllParams_(const char* currency, double amount, const char* productSKU, const char* productName, const char* productCategory, int productQuantity, double productPrice){
+    void RevenueWithAllParams_(const char* currency, double amount, const char* productSKU, const char* productName, const char* productCategory, int productQuantity, double productPrice) {
         [Singular revenue:[NSString stringWithUTF8String:currency] amount:amount productSKU:[NSString stringWithUTF8String:productSKU] productName:[NSString stringWithUTF8String:productName] productCategory:[NSString stringWithUTF8String:productCategory] productQuantity:productQuantity productPrice:productPrice];
     }
     
-    void CustomRevenueWithAllParams_(const char* eventName, const char* currency, double amount, const char* productSKU, const char* productName, const char* productCategory, int productQuantity, double productPrice){
+    void CustomRevenueWithAllParams_(const char* eventName, const char* currency, double amount, const char* productSKU, const char* productName, const char* productCategory, int productQuantity, double productPrice) {
         [Singular customRevenue:[NSString stringWithUTF8String:eventName] currency:[NSString stringWithUTF8String:currency] amount:amount productSKU:[NSString stringWithUTF8String:productSKU] productName:[NSString stringWithUTF8String:productName] productCategory:[NSString stringWithUTF8String:productCategory] productQuantity:productQuantity productPrice:productPrice];
     }
-    
+
+    void RevenueWithAttributes_(const char* currency, double amount, const char* attributesAsJson) {
+        NSError *error;
+        NSDictionary* attributesDictionary = [NSJSONSerialization JSONObjectWithData:[[NSString stringWithUTF8String:attributesAsJson]
+                                                                                      dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&error];                                                                          
+        if (!error) {
+            [Singular revenue:[NSString stringWithUTF8String:currency]
+                       amount:amount
+               withAttributes:attributesDictionary];
+        }   
+    }
+
+    void CustomRevenueWithAttributes_(const char* eventName, const char* currency, double amount, const char* attributesAsJson) {
+        NSError *error;
+        NSDictionary* attributesDictionary = [NSJSONSerialization JSONObjectWithData:[[NSString stringWithUTF8String:attributesAsJson]
+                                                                                      dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&error];
+        if (!error) {
+            [Singular customRevenue:[NSString stringWithUTF8String:eventName]
+                           currency:[NSString stringWithUTF8String:currency]
+                             amount:amount
+                     withAttributes:attributesDictionary];
+        }
+    }
+
     // Custom user id
     void SetCustomUserId_(const char* customUserId){
         [Singular setCustomUserId:[NSString stringWithUTF8String:customUserId]];
