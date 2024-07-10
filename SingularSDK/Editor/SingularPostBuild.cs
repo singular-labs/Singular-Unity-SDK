@@ -13,7 +13,36 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Singular.Editor {
-    
+
+    private const string IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY = "SingularIsIOSUseCustomAppDelegate";
+    private static bool IsIOSUseCustomAppDelegate => EditorPrefs.GetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 0 ) == 1;
+
+    // IOS APP USES CUSTOM APP DELEGATE
+
+    [MenuItem( "Window/Singular/My iOS App use a custom AppDelegate", true )]
+    private static bool _MenuItem_iOSUseCustomAppDelegate()
+    {
+        return !IsIOSUseCustomAppDelegate;
+    }
+    [MenuItem( "Window/Singular/My iOS App use a custom AppDelegate" )]
+    private static void MenuItem_iOSUseCustomAppDelegate()
+    {
+        EditorPrefs.SetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 1 )
+    }
+
+    // IOS APP DON'T USES CUSTOM APP DELEGATE
+
+    [MenuItem( "Window/Singular/My iOS App don't use a custom AppDelegate", true )]
+    private static bool _MenuItem_iOSDontUseCustomAppDelegate()
+    {
+        return IsIOSUseCustomAppDelegate;
+    }
+    [MenuItem( "Window/Singular/My iOS App don't use a custom AppDelegate" )]
+    private static void MenuItem_iOSDontUseCustomAppDelegate()
+    {
+        EditorPrefs.SetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 0 )
+    }
+
 #if UNITY_IOS
 
 public class SingularPostBuild
@@ -25,6 +54,7 @@ public class SingularPostBuild
         {
             Debug.Log("Start Xcode project related configuration of SDK......");
             AddiOSDependencies(pathToBuiltProject);
+            HandleCustomAppDelegate(pathToBuiltProject);
         }
     }
 
@@ -54,6 +84,22 @@ public class SingularPostBuild
 
         // Save the changes to Xcode project file.
         pbxProject.WriteToFile(projectPath);
+    }
+
+
+    static void HandleCustomAppDelegate(string pathToBuiltProject)
+    {
+        if( !IsIOSUseCustomAppDelegate )
+            return;
+
+        // get the path to SingularAppDelegate.m in built project
+        var SingularAppDelegateFile            = $"{pathToBuiltProject}/Libraries/singular-unity-package/SingularSDK/Plugins/iOS/SingularAppDelegate.m";
+        // get the content
+        var SingularAppDelegateFileContent     = File.ReadAllText(SingularAppDelegateFile);
+        // comment out the App delagate inplementation directive
+        var SingularAppDelegateFileReplacement = SingularAppDelegateFileContent.Replace("IMPL_APP_CONTROLLER_SUBCLASS(SingularAppDelegate)", "//IMPL_APP_CONTROLLER_SUBCLASS(SingularAppDelegate)");
+        // save the modified file
+        File.WriteAllText( SingularAppDelegateFile, SingularAppDelegateFileReplacement);
     }
 }
 
