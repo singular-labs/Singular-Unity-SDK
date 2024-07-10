@@ -1,5 +1,4 @@
-﻿//#define UNITY_IOS
-using System;
+﻿using System;
 using System.Xml;
 using UnityEngine;
 using UnityEditor;
