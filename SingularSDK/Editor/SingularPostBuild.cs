@@ -1,4 +1,5 @@
-﻿using System;
+﻿//#define UNITY_IOS
+using System;
 using System.Xml;
 using UnityEngine;
 using UnityEditor;
@@ -13,36 +14,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Singular.Editor {
-
-    private const string IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY = "SingularIsIOSUseCustomAppDelegate";
-    private static bool IsIOSUseCustomAppDelegate => EditorPrefs.GetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 0 ) == 1;
-
-    // IOS APP USES CUSTOM APP DELEGATE
-
-    [MenuItem( "Window/Singular/My iOS App use a custom AppDelegate", true )]
-    private static bool _MenuItem_iOSUseCustomAppDelegate()
-    {
-        return !IsIOSUseCustomAppDelegate;
-    }
-    [MenuItem( "Window/Singular/My iOS App use a custom AppDelegate" )]
-    private static void MenuItem_iOSUseCustomAppDelegate()
-    {
-        EditorPrefs.SetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 1 )
-    }
-
-    // IOS APP DON'T USES CUSTOM APP DELEGATE
-
-    [MenuItem( "Window/Singular/My iOS App don't use a custom AppDelegate", true )]
-    private static bool _MenuItem_iOSDontUseCustomAppDelegate()
-    {
-        return IsIOSUseCustomAppDelegate;
-    }
-    [MenuItem( "Window/Singular/My iOS App don't use a custom AppDelegate" )]
-    private static void MenuItem_iOSDontUseCustomAppDelegate()
-    {
-        EditorPrefs.SetInt( IOS_USE_CUSTOM_APP_DELEGATE_EDITOR_KEY, 0 )
-    }
-
+    
 #if UNITY_IOS
 
 public class SingularPostBuild
@@ -89,7 +61,7 @@ public class SingularPostBuild
 
     static void HandleCustomAppDelegate(string pathToBuiltProject)
     {
-        if( !IsIOSUseCustomAppDelegate )
+        if( !SingularEditorParams.IsIOSUseCustomAppDelegate )
             return;
 
         // get the path to SingularAppDelegate.m in built project
