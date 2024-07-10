@@ -6,6 +6,7 @@ using UnityEditor.Callbacks;
 using UnityEditor.Android;
 #if UNITY_IOS
 using UnityEditor.iOS.Xcode;
+using UnityEditor.iOS.Xcode.Extensions;
 #endif
 using System.IO;
 using System.Linq;
@@ -54,6 +55,91 @@ public class SingularPostBuild
 
         // Save the changes to Xcode project file.
         pbxProject.WriteToFile(projectPath);
+    }
+
+
+
+
+
+    private const string TargetUnityIphonePodfileLine    = "target 'Unity-iPhone' do";
+    private const string UseFrameworksPodfileLine        = "use_frameworks!";
+    private const string UseFrameworksDynamicPodfileLine = "use_frameworks! :linkage => :dynamic";
+    private const string UseFrameworksStaticPodfileLine  = "use_frameworks! :linkage => :static";
+    private const string SingularSDKFramework            = "Singular.xcframework";
+    
+    [PostProcessBuild(int.MaxValue)] // at the very end of the build, pod install will be complete
+    private static void EndOfBuild(BuildTarget buildTarget, string buildPath)
+    {
+        // Check that the Pods directory exists (it might not if a publisher is building with Generate Podfile setting disabled in EDM).
+        var podsDirectory = Path.Combine(buildPath, "Pods");
+        if( !Directory.Exists(podsDirectory) || !ShouldEmbedDynamicLibraries( buildPath ) ) 
+            return;
+        
+        //Debug.Log( $"[BuildProcessor] try embedding {SingularSDKFramework} to UnityMainTarget" );
+        
+        // find the SingularSDKFramework framework into Pods directory
+        
+        // both .framework and .xcframework are directories, not files
+        var directories = Directory.GetDirectories(podsDirectory, SingularSDKFramework, SearchOption.AllDirectories);
+        if( directories.Length <= 0 )
+        {
+            //Debug.LogError( $"[BuildProcessor] Framework:{SingularSDKFramework} not found in Pods directory:{podsDirectory}" );
+            return;
+        }
+        
+        var projectPath = PBXProject.GetPBXProjectPath(buildPath);
+        var project     = new PBXProject();
+        project.ReadFromFile(projectPath);
+        
+        var unityMainTargetGuid = project.GetUnityMainTargetGuid();
+        
+        var dynamicLibraryAbsolutePath       = directories[0];
+        var index                            = dynamicLibraryAbsolutePath.LastIndexOf("Pods", StringComparison.Ordinal );
+        var SingularSDKFrameworkRelativePath = dynamicLibraryAbsolutePath[index..];
+        
+        var fileGuid = project.AddFile(SingularSDKFrameworkRelativePath, SingularSDKFrameworkRelativePath);
+        project.AddFileToEmbedFrameworks(unityMainTargetGuid, fileGuid);
+        
+        // save edited project
+        project.WriteToFile(projectPath);
+        
+        //Debug.Log( $"[BuildProcessor] file:{SingularSDKFrameworkRelativePath} added with GUID:{fileGuid}" );
+    }
+
+    /// <summary>
+    /// |-----------------------------------------------------------------------------------------------------------------------------------------------------|
+    /// |         embed             |  use_frameworks! (:linkage => :dynamic)  |  use_frameworks! :linkage => :static  |  `use_frameworks!` line not present  |
+    /// |---------------------------|------------------------------------------|---------------------------------------|--------------------------------------|
+    /// | Unity-iPhone present      | Do not embed dynamic libraries           | Embed dynamic libraries               | Do not embed dynamic libraries       |
+    /// | Unity-iPhone not present  | Embed dynamic libraries                  | Embed dynamic libraries               | Embed dynamic libraries              |
+    /// |-----------------------------------------------------------------------------------------------------------------------------------------------------|
+    /// </summary>
+    /// <param name="buildPath">An iOS build path</param>
+    /// <returns>Whether or not the dynamic libraries should be embedded.</returns>
+    private static bool ShouldEmbedDynamicLibraries( string buildPath )
+    {
+        var podfilePath = Path.Combine( buildPath, "Podfile" );
+        if( !File.Exists( podfilePath ) )
+            return false;
+
+        // If the Podfile doesn't have a `Unity-iPhone` target, we should embed the dynamic libraries.
+        var lines                     = File.ReadAllLines( podfilePath );
+        var containsUnityIphoneTarget = lines.Any( line => line.Contains( TargetUnityIphonePodfileLine ) );
+        if( !containsUnityIphoneTarget )
+            return true;
+
+        // If the Podfile does not have a `use_frameworks! :linkage => static` line, we should not embed the dynamic libraries.
+        var useFrameworksStaticLineIndex = Array.FindIndex( lines, line => line.Contains( UseFrameworksStaticPodfileLine ) );
+        if( useFrameworksStaticLineIndex == -1 ) 
+            return false;
+
+        // If more than one of the `use_frameworks!` lines are present, CocoaPods will use the last one.
+        var useFrameworksLineIndex        = Array.FindIndex( lines, line => line.Trim() == UseFrameworksPodfileLine ); // Check for exact line to avoid matching `use_frameworks! :linkage => static/dynamic`
+        var useFrameworksDynamicLineIndex = Array.FindIndex( lines, line => line.Contains( UseFrameworksDynamicPodfileLine ) );
+
+        // Check if `use_frameworks! :linkage => :static` is the last line of the three. If it is, we should embed the dynamic libraries.
+        return useFrameworksLineIndex        < useFrameworksStaticLineIndex &&
+               useFrameworksDynamicLineIndex < useFrameworksStaticLineIndex;
     }
 }
 
