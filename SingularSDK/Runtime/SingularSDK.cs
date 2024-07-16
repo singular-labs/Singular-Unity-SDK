@@ -21,11 +21,14 @@ namespace Singular
         public string SingularAPISecret = "<YourAPISecret>";
         public bool   InitializeOnAwake = true;
         
+        public bool enableLogging = true;
+        public int logLevel       = 3;
+        
         private static SingularSDK instance = null;
-        private static bool Initialized = false;
+        private static bool Initialized     = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION = "5.1.3";
+        private const string UNITY_VERSION      = "5.2.0";
         
         // ios-only:
         [Obsolete]
@@ -36,11 +39,9 @@ namespace Singular
         public int  waitForTrackingAuthorizationWithTimeoutInterval = 0;
         
         // android-only:
-        public bool enableLogging = true;
-        public int logLevel = 3;
-        public static string fcmDeviceToken = null;
+        public static string fcmDeviceToken    = null;
         public string facebookAppId;
-        public bool collectOAID = false;
+        public bool collectOAID               = false;
         public bool limitedIdentifiersEnabled = false;
         
         private static string imei;
@@ -97,7 +98,11 @@ namespace Singular
         // The Singular SDK is initialized here
         void Awake()
         {
-            Debug.Log(string.Format("SingularSDK Awake, InitializeOnAwake={0}", InitializeOnAwake));
+            // init logger - matches native layer logging levels
+            SingularUnityLogger.EnableLogging(enableLogging);
+            SingularUnityLogger.SetLogLevel(logLevel);
+            
+            SingularUnityLogger.LogDebug(string.Format("SingularSDK Awake, InitializeOnAwake={0}", InitializeOnAwake));
 
             if (Application.isEditor)
             {
@@ -115,11 +120,11 @@ namespace Singular
 
             if (InitializeOnAwake)
             {
-                Debug.Log("Awake : calling Singular Init");
+                SingularUnityLogger.LogDebug("Awake : calling Singular Init");
                 InitializeSingularSDK();
             }
         }
-
+        
         // Only call this if you have disabled InitializeOnAwake
         public static void InitializeSingularSDK()
         {
@@ -128,11 +133,11 @@ namespace Singular
 
             if (!instance)
             {
-                Debug.LogError("SingularSDK InitializeSingularSDK, no instance available - cannot initialize");
+                SingularUnityLogger.LogError("SingularSDK InitializeSingularSDK, no instance available - cannot initialize");
                 return;
             }
 
-            Debug.Log(string.Format("SingularSDK InitializeSingularSDK, APIKey={0}", instance.SingularAPIKey));
+            SingularUnityLogger.LogDebug(string.Format("SingularSDK InitializeSingularSDK, APIKey={0}", instance.SingularAPIKey));
 
             if (Application.isEditor)
             {
@@ -207,7 +212,7 @@ namespace Singular
 
 #if UNITY_ANDROID
     private static void initSDK(SingularConfig config) {
-        Debug.Log("UNITY_ANDROID - init Is called");
+        SingularUnityLogger.LogDebug("UNITY_ANDROID - init Is called");
 
         InitAndroidJavaClasses();
 
@@ -748,7 +753,7 @@ namespace Singular
             {
 #if UNITY_IOS || UNITY_ANDROID
             if (args.Length % 2 != 0) {
-                Debug.LogWarning("The number of arguments is an odd number. The arguments are key-value pairs so the number of arguments should be even.");
+                SingularUnityLogger.LogWarn("The number of arguments is an odd number. The arguments are key-value pairs so the number of arguments should be even.");
             } else {
                 Dictionary<string, object> dict = new Dictionary<string, object>();
 
@@ -790,7 +795,7 @@ namespace Singular
 
             if (Mathf.Clamp(age, 0, 100) != age)
             {
-                Debug.Log("Age " + age + "is not between 0 and 100");
+                SingularUnityLogger.LogDebug("Age " + age + "is not between 0 and 100");
                 return;
             }
 #if UNITY_IOS
@@ -807,7 +812,7 @@ namespace Singular
 
             if (gender != "m" && gender != "f")
             {
-                Debug.Log("gender " + gender + "is not m or f");
+                SingularUnityLogger.LogDebug("gender " + gender + "is not m or f");
                 return;
             }
 #if UNITY_IOS
@@ -829,7 +834,7 @@ namespace Singular
         }
 #elif UNITY_ANDROID
         if (Application.isEditor) {
-            Debug.Log("SetAllowAutoIAPComplete is not supported on Android");
+            SingularUnityLogger.LogDebug("SetAllowAutoIAPComplete is not supported on Android");
         }
 #endif
         }
@@ -875,7 +880,7 @@ namespace Singular
         {
             if (!instance)
             {
-                Debug.LogError(
+                SingularUnityLogger.LogError(
                     "SingularSDK SetDeferredDeepLinkHandler, no instance available - cannot set deferred deeplink handler!");
                 return;
             }
@@ -899,7 +904,7 @@ namespace Singular
         // this is the internal handler - handling deeplinks for both iOS & Android
         public void DeepLinkHandler(string message)
         {
-            Debug.Log(string.Format("SingularSDK DeepLinkHandler called! message='{0}'", message));
+            SingularUnityLogger.LogDebug(string.Format("SingularSDK DeepLinkHandler called! message='{0}'", message));
 
             if (Application.isEditor)
             {
@@ -963,7 +968,7 @@ namespace Singular
 
         private void SingularDeviceAttributionCallback(string handlerParamsJson)
         {
-            Debug.Log(string.Format("SingularSDK SingularDeviceAttributionCallback called! message='{0}'",
+            SingularUnityLogger.LogDebug(string.Format("SingularSDK SingularDeviceAttributionCallback called! message='{0}'",
                 handlerParamsJson));
 
             if (registeredDeviceAttributionCallbackHandler != null && handlerParamsJson != null)
@@ -1067,14 +1072,14 @@ namespace Singular
 #if UNITY_IOS
         if (!Application.isEditor) {
             if (APNSToken.Length % 2 != 0) {
-                Debug.Log("RegisterDeviceTokenForUninstall: token must be an even-length hex string!");
+                SingularUnityLogger.LogDebug("RegisterDeviceTokenForUninstall: token must be an even-length hex string!");
                 return;
             }
 
             RegisterDeviceTokenForUninstall_(APNSToken);
         }
 #elif UNITY_ANDROID
-        Debug.Log("RegisterDeviceTokenForUninstall is supported only for iOS");
+        SingularUnityLogger.LogDebug("RegisterDeviceTokenForUninstall is supported only for iOS");
 #endif
         }
 
