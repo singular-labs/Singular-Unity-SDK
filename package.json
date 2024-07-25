@@ -1,6 +1,6 @@
 {
   "name": "singular-unity-package",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "displayName": "Singular",
   "description": "Singular Unity Package",
   "type": "library",

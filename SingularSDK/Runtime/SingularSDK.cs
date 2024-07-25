@@ -25,10 +25,10 @@ namespace Singular
         public int logLevel       = 3;
         
         private static SingularSDK instance = null;
-        private static bool Initialized     = false;
+        public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.2.0";
+        private const string UNITY_VERSION      = "5.2.1";
         
         // ios-only:
         [Obsolete]
