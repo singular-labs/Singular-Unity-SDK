@@ -1,5 +1,5 @@
 {
-  "name": "singular-unity-package",
+  "name": "com.singular.unitysdk",
   "version": "5.2.1",
   "displayName": "Singular",
   "description": "Singular Unity Package",
