@@ -131,6 +131,9 @@ namespace Singular
             if (Initialized)
                 return;
 
+            if (Application.isEditor)
+                return;
+            
             if (!instance)
             {
                 SingularUnityLogger.LogError("SingularSDK InitializeSingularSDK, no instance available - cannot initialize");
@@ -138,11 +141,6 @@ namespace Singular
             }
 
             SingularUnityLogger.LogDebug(string.Format("SingularSDK InitializeSingularSDK, APIKey={0}", instance.SingularAPIKey));
-
-            if (Application.isEditor)
-            {
-                return;
-            }
 
             SingularConfig config = BuildSingularConfig();
 
