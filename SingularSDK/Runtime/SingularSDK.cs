@@ -96,7 +96,7 @@ namespace Singular
         #endregion
         
         // The Singular SDK is initialized here
-        void Awake()
+        private void Awake()
         {
             // init logger - matches native layer logging levels
             SingularUnityLogger.EnableLogging(enableLogging);
@@ -833,7 +833,7 @@ namespace Singular
 #endif
         }
 
-        void OnApplicationPause(bool paused)
+        private void OnApplicationPause(bool paused)
         {
             if (!Initialized || !instance)
                 return;
@@ -855,7 +855,7 @@ namespace Singular
 #endif
         }
 
-        void OnApplicationQuit()
+        private void OnApplicationQuit()
         {
             if (Application.isEditor)
             {
