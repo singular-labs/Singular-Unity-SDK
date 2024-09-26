@@ -204,10 +204,6 @@ namespace Singular
             return config;
         }
 
-        public void Update()
-        {
-        }
-
 #if UNITY_ANDROID
     private static void initSDK(SingularConfig config) {
         SingularUnityLogger.LogDebug("UNITY_ANDROID - init Is called");
