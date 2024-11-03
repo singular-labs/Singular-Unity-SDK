@@ -1,18 +1,36 @@
 {
-  "name": "singular-unity-package",
-  "version": "5.2.1",
-  "displayName": "Singular",
-  "description": "Singular Unity Package",
-  "type": "library",
-  "homepage": "https://www.singular.net",
-  "license": "MIT",
-  "author": {
-    "name": "Singular Labs",
-    "url": "https://github.com/singular-labs/Singular-Unity-SDK"
-  },
-  "unity": "2019.4",
-  "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "3.2.1",
-    "com.unity.purchasing": "2.0.6"
-  }
+    "name": "singular-unity-package",
+    "version": "5.3.0",
+    "displayName": "Singular",
+    "description": "Singular Unity Package",
+    "type": "library",
+    "homepage": "https://www.singular.net",
+    "license": "MIT",
+    "author":
+    {
+        "name": "Singular Labs",
+        "url": "https://github.com/singular-labs/Singular-Unity-SDK"
+    },
+    "unity": "2019.4",
+    "dependencies":
+    {
+        "com.unity.nuget.newtonsoft-json": "3.2.1"
+    },
+    "repository":
+    {
+        "type": "git",
+        "url": "https://github.com/singular-labs/Singular-Unity-SDK.git"
+    },
+    "keywords":
+    [
+        "Singular",
+        "Analytics",
+        "User Engagement",
+        "Mobile",
+        "Attribution",
+        "Tracking",
+        "Advertising"
+    ],
+    "changelogUrl": "https://support.singular.net/hc/en-us/articles/360040639152",
+    "documentationUrl": "https://support.singular.net/hc/en-us/articles/360037635452"
 }
