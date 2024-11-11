@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.3.0";
+        private const string UNITY_VERSION      = "5.3.0-KIDS";
         
         // ios-only:
         [Obsolete]
@@ -313,9 +313,6 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern string GetAPID_();
-
-    [DllImport("__Internal")]
-    private static extern string GetIDFA_();
 
     // Revenue functions
     [DllImport("__Internal")]
@@ -1096,18 +1093,7 @@ namespace Singular
 #endif
             return null;
         }
-
-        public static string GetIDFA()
-        {
-            //only works for iOS. Will return null until Singular is initialized.
-#if UNITY_IOS
-        if (!Application.isEditor) {
-            return GetIDFA_();
-        }
-#endif
-            return null;
-        }
-
+        
         #region SDID
 
         public static void SetSingularSdidAccessorHandler(SingularSdidAccessorHandler handler)
