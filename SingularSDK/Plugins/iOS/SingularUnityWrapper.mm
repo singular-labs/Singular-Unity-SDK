@@ -393,16 +393,6 @@ extern "C" {
         return result;
     }
     
-    const char* GetIDFA_(){
-        const char* str = [[[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString] UTF8String];
-        if(str == NULL){
-            return NULL;
-        }
-        char* result = (char*)malloc(strlen(str)+1);
-        strcpy(result,str);
-        return result;
-    }
-    
     // Revenue methods
     void Revenue_(const char* currency, double amount) {
         [Singular revenue:[NSString stringWithUTF8String:currency] amount:amount];

@@ -1,8 +1,8 @@
 {
-    "name": "singular-unity-package",
+    "name": "singular-unity-kids-package",
     "version": "5.3.0",
-    "displayName": "Singular",
-    "description": "Singular Unity Package",
+    "displayName": "Singular Kids",
+    "description": "Singular Unity Kids Package",
     "type": "library",
     "homepage": "https://www.singular.net",
     "license": "MIT",

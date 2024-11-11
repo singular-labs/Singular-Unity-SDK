@@ -1,16 +1,13 @@
 <dependencies>
   <androidPackages>
-    <androidPackage spec="com.singular.sdk:singular_sdk:12.6.0">
+    <androidPackage spec="com.singular.sdk:singular_kids_sdk:12.6.0">
       <repositories>
         <repository>https://maven.singular.net</repository>
       </repositories>
     </androidPackage>
-    <androidPackage spec="com.android.installreferrer:installreferrer:2.2"> </androidPackage>
-    <androidPackage spec="com.google.android.gms:play-services-appset:16.0.0"> </androidPackage>
-    <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.0.1"> </androidPackage>
   </androidPackages>
   <iosPods>
-    <iosPod name="Singular-SDK" version="12.6.0" minTargetSdk="12.0" bitcodeEnabled="false" addToAllTargets="false">
+    <iosPod name="Singular-Kids-SDK" version="12.6.0" minTargetSdk="12.0" bitcodeEnabled="false" addToAllTargets="false">
     </iosPod>
   </iosPods>
 </dependencies>
