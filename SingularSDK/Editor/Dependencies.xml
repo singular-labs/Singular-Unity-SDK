@@ -1,6 +1,6 @@
 <dependencies>
   <androidPackages>
-    <androidPackage spec="com.singular.sdk:singular_sdk:12.6.0">
+    <androidPackage spec="com.singular.sdk:singular_sdk:12.6.1">
       <repositories>
         <repository>https://maven.singular.net</repository>
       </repositories>
@@ -10,7 +10,7 @@
     <androidPackage spec="com.google.android.gms:play-services-ads-identifier:18.0.1"> </androidPackage>
   </androidPackages>
   <iosPods>
-    <iosPod name="Singular-SDK" version="12.6.0" minTargetSdk="12.0" bitcodeEnabled="false" addToAllTargets="false">
+    <iosPod name="Singular-SDK" version="12.6.1" minTargetSdk="12.0" bitcodeEnabled="false" addToAllTargets="false">
     </iosPod>
   </iosPods>
 </dependencies>
