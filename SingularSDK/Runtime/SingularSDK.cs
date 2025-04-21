@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.3.1";
+        private const string UNITY_VERSION      = "5.3.2";
         
         // ios-only:
         [Obsolete]
@@ -44,7 +44,6 @@ namespace Singular
         public static string fcmDeviceToken    = null;
         public string facebookAppId;
         public bool collectOAID               = false;
-        public bool limitedIdentifiersEnabled = false;
         
         private static string imei;
         #if UNITY_ANDROID
@@ -60,6 +59,7 @@ namespace Singular
         private Dictionary<string, SingularGlobalProperty> globalProperties = new Dictionary<string, SingularGlobalProperty>();
         private static bool? limitDataSharing = null;
         private static string customUserId;
+        public bool limitedIdentifiersEnabled = false;
         
         // deep links:
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
@@ -178,6 +178,7 @@ namespace Singular
             config.SetValue("globalProperties", instance.globalProperties);
             config.SetValue("sessionTimeoutSec", instance.sessionTimeoutSec);
             config.SetValue("customSdid", CustomSdid);
+            config.SetValue("limitedIdentifiersEnabled", instance.limitedIdentifiersEnabled);
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
@@ -187,13 +188,14 @@ namespace Singular
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
         config.SetValue("enableLogging", instance.enableLogging);
         config.SetValue("logLevel", instance.logLevel);
-        if (SingularSDK.fcmDeviceToken != null){
+        if (SingularSDK.fcmDeviceToken != null)
+        {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
         config.SetValue("collectOAID", instance.collectOAID);
-        config.SetValue("limitedIdentifiersEnabled", instance.limitedIdentifiersEnabled);
 
-        if (limitDataSharing != null) {
+        if (limitDataSharing != null) 
+        {
             config.SetValue("limitDataSharing", limitDataSharing);
         }
 
