@@ -185,8 +185,7 @@ extern "C" {
         singularConfig.deviceAttributionCallback = ^(NSDictionary *deviceAttributionInfo) {
             handleDeviceAttributionData(deviceAttributionInfo);
         };
-        
-        
+
         NSString *customSdid = [config objectForKey:@"customSdid"];
         singularConfig.customSdid = customSdid;
         
@@ -197,6 +196,8 @@ extern "C" {
         singularConfig.didSetSdidHandler = ^(NSString *result) {
             sendSdkMessage("SingularDidSetSdid", result);
         };
+        
+        singularConfig.limitedIdentifiersEnabled = [[config objectForKey:@"limitedIdentifiersEnabled"] boolValue];
         
         [Singular start:singularConfig];
         
