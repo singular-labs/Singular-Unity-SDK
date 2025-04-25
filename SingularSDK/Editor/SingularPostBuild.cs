@@ -25,6 +25,7 @@ public class SingularPostBuild
         {
             Debug.Log("Start Xcode project related configuration of SDK......");
             AddiOSDependencies(pathToBuiltProject);
+            HandleCustomAppDelegate(pathToBuiltProject);
         }
     }
 
@@ -54,6 +55,22 @@ public class SingularPostBuild
 
         // Save the changes to Xcode project file.
         pbxProject.WriteToFile(projectPath);
+    }
+
+
+    static void HandleCustomAppDelegate(string pathToBuiltProject)
+    {
+        if( !SingularEditorParams.IsIOSUseCustomAppDelegate )
+            return;
+
+        // get the path to SingularAppDelegate.m in built project
+        var SingularAppDelegateFile            = $"{pathToBuiltProject}/Libraries/singular-unity-package/SingularSDK/Plugins/iOS/SingularAppDelegate.m";
+        // get the content
+        var SingularAppDelegateFileContent     = File.ReadAllText(SingularAppDelegateFile);
+        // comment out the App delagate inplementation directive
+        var SingularAppDelegateFileReplacement = SingularAppDelegateFileContent.Replace("IMPL_APP_CONTROLLER_SUBCLASS(SingularAppDelegate)", "//IMPL_APP_CONTROLLER_SUBCLASS(SingularAppDelegate)");
+        // save the modified file
+        File.WriteAllText( SingularAppDelegateFile, SingularAppDelegateFileReplacement);
     }
 }
 
