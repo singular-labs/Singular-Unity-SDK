@@ -98,7 +98,7 @@ namespace Singular
         #endregion
         
         // The Singular SDK is initialized here
-        void Awake()
+        private void Awake()
         {
             // init logger - matches native layer logging levels
             SingularUnityLogger.EnableLogging(enableLogging);
@@ -133,6 +133,9 @@ namespace Singular
             if (Initialized)
                 return;
 
+            if (Application.isEditor)
+                return;
+            
             if (!instance)
             {
                 SingularUnityLogger.LogError("SingularSDK InitializeSingularSDK, no instance available - cannot initialize");
@@ -140,11 +143,6 @@ namespace Singular
             }
 
             SingularUnityLogger.LogDebug(string.Format("SingularSDK InitializeSingularSDK, APIKey={0}", instance.SingularAPIKey));
-
-            if (Application.isEditor)
-            {
-                return;
-            }
 
             SingularConfig config = BuildSingularConfig();
 
@@ -208,10 +206,6 @@ namespace Singular
 #endif
 
             return config;
-        }
-
-        public void Update()
-        {
         }
 
 #if UNITY_ANDROID
@@ -843,7 +837,7 @@ namespace Singular
 #endif
         }
 
-        void OnApplicationPause(bool paused)
+        private void OnApplicationPause(bool paused)
         {
             if (!Initialized || !instance)
                 return;
@@ -865,7 +859,7 @@ namespace Singular
 #endif
         }
 
-        void OnApplicationQuit()
+        private void OnApplicationQuit()
         {
             if (Application.isEditor)
             {
