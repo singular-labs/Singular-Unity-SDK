@@ -141,8 +141,6 @@ extern "C" {
          withSecret:apiSecret
          andHandler:singularLinkHandler
          withTimeout:shortlinkResolveTimeout];
-        
-        NSDictionary* globalProperties = [config objectForKey:@"globalProperties"];
 
         SingularConfig* singularConfig = [[SingularConfig alloc] initWithApiKey:apiKey andSecret:apiSecret];
         singularConfig.shortLinkResolveTimeOut = shortlinkResolveTimeout;
@@ -161,6 +159,7 @@ extern "C" {
             handleConversionValuesUpdated(conversionValue ? [conversionValue intValue] : -1, coarse ? [coarse intValue] :  -1, lock);
         };
         
+        NSDictionary* globalProperties = [config objectForKey:@"globalProperties"];
         if ([globalProperties count] > 0){
              for (NSDictionary* property in [globalProperties allValues]) {
                  NSString* propertyKey = [property objectForKey:@"Key"];
@@ -197,7 +196,17 @@ extern "C" {
             sendSdkMessage("SingularDidSetSdid", result);
         };
         
-        singularConfig.limitedIdentifiersEnabled = [[config objectForKey:@"limitedIdentifiersEnabled"] boolValue];
+        NSArray *pushLinkPaths = [config objectForKey:@"pushNotificationLinkPath"];
+        if (pushLinkPaths && pushLinkPaths.count > 0) {
+            singularConfig.pushNotificationLinkPath = pushLinkPaths;
+        }
+        
+        singularConfig.limitAdvertisingIdentifiers = [[config objectForKey:@"limitAdvertisingIdentifiers"] boolValue];
+        
+        NSArray *brandedDomains = [config objectForKey:@"brandedDomains"];
+        if (brandedDomains && brandedDomains.count > 0) {
+            singularConfig.brandedDomains = brandedDomains;
+        }
         
         [Singular start:singularConfig];
         
@@ -330,6 +339,16 @@ extern "C" {
     void SetAllowAutoIAPComplete_(bool allowed){
         BOOL b = allowed ? YES : NO;
         [Singular setAllowAutoIAPComplete:b];
+    }
+    
+    void HandlePushNotification_(const char* payloadJson) {
+        NSError *error;
+        NSDictionary *pushPayloadDictionary = [NSJSONSerialization JSONObjectWithData:[[NSString stringWithUTF8String:payloadJson]
+                                                                                      dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&error];
+        if (error) { return; }
+        if (pushPayloadDictionary.allKeys.count == 0) { return; }
+        
+        [Singular handlePushNotification:pushPayloadDictionary];
     }
     
     void SetBatchesEvents_(bool setBatches){
@@ -485,6 +504,10 @@ extern "C" {
     
     bool GetLimitDataSharing_() {
         return [Singular getLimitDataSharing];
+    }
+    
+    void SetLimitAdvertisingIdentifiers_(bool isEnabled) {
+        [Singular setLimitAdvertisingIdentifiers:isEnabled];
     }
 
     /* Global Properties */
