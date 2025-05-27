@@ -18,7 +18,7 @@ namespace Singular
     {
         #region SDK properties
         
-        // init: 
+        #region init properties
         public string SingularAPIKey    = "<YourAPIKey>";
         public string SingularAPISecret = "<YourAPISecret>";
         public bool   InitializeOnAwake = true;
@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.3.0-KIDS";
+        private const string UNITY_VERSION      = "5.4.0-KIDS";
         
         // ios-only:
         [Obsolete]
@@ -39,12 +39,12 @@ namespace Singular
         public bool SKANEnabled          = true;
         public bool manualSKANConversionManagement = false;
         public int  waitForTrackingAuthorizationWithTimeoutInterval = 0;
+        #endregion // iOS-only
         
-        // android-only:
+        #region Android-only
         public static string fcmDeviceToken    = null;
         public string facebookAppId;
         public bool collectOAID               = false;
-        public bool limitedIdentifiersEnabled = false;
         
         private static string imei;
         #if UNITY_ANDROID
@@ -55,13 +55,14 @@ namespace Singular
 
             static bool status = false;
         #endif
+        #endregion //Android-only
         
-        // cross-os:
+        #region Cross-platform
         private Dictionary<string, SingularGlobalProperty> globalProperties = new Dictionary<string, SingularGlobalProperty>();
         private static bool? limitDataSharing = null;
         private static string customUserId;
         
-        // deep links:
+        #region Deeplinks
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
         public long sessionTimeoutSec = 0; // default value (0) sets to default timeout (60s)
         public long shortlinkResolveTimeout = 0; // default value (0) sets to default timeout (10s)
@@ -75,27 +76,42 @@ namespace Singular
         private Int32              resolvedSingularLinkTime;
         static Int32               cachedDDLMessageTime;
         static string              cachedDDLMessage;
+        #endregion // Deeplinks
         
-        // session management:
+        #region Session management
         public static bool endSessionOnGoingToBackground = false;
         public static bool restartSessionOnReturningToForeground = false;
+        #endregion // Session management
         
-        // admon/batching:
+        #region Admom/batching
         public static bool   batchEvents = false;
         private const string ADMON_REVENUE_EVENT_NAME = "__ADMON_USER_LEVEL_REVENUE__";
+        #endregion // Admon/batching
         
-        // SDID:
+        #region SDID
         public static string CustomSdid;
+        #endregion // SDID
+        
+        #region Push Notifications
+        public string[] pushNotificationsLinkPaths;
+        #endregion // Push Notifications
+        
+        #region Branded Domains
+        public string[] brandedDomains;
+        #endregion // Branded Domains
 
-        // handlers and callbacks:
+        #region Handlers and Callbacks
         public static SingularLinkHandler                      registeredSingularLinkHandler = null;
         public static SingularDeferredDeepLinkHandler          registeredDDLHandler = null;
         public static SingularConversionValueUpdatedHandler    registeredConversionValueUpdatedHandler = null;
         public static SingularConversionValuesUpdatedHandler   registeredConversionValuesUpdatedHandler = null;
         public static SingularDeviceAttributionCallbackHandler registeredDeviceAttributionCallbackHandler = null;
         public static SingularSdidAccessorHandler              registeredSdidAccessorHandler = null;
+        #endregion // Handlers and Callbacks
         
-        #endregion
+        #endregion // Cross-platform
+        
+        #endregion // SDK properties
         
         // The Singular SDK is initialized here
         void Awake()
@@ -178,6 +194,8 @@ namespace Singular
             config.SetValue("globalProperties", instance.globalProperties);
             config.SetValue("sessionTimeoutSec", instance.sessionTimeoutSec);
             config.SetValue("customSdid", CustomSdid);
+            config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
+            config.SetValue("brandedDomains", instance.brandedDomains);
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
@@ -187,13 +205,14 @@ namespace Singular
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
         config.SetValue("enableLogging", instance.enableLogging);
         config.SetValue("logLevel", instance.logLevel);
-        if (SingularSDK.fcmDeviceToken != null){
+        if (SingularSDK.fcmDeviceToken != null)
+        {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
         config.SetValue("collectOAID", instance.collectOAID);
-        config.SetValue("limitedIdentifiersEnabled", instance.limitedIdentifiersEnabled);
 
-        if (limitDataSharing != null) {
+        if (limitDataSharing != null) 
+        {
             config.SetValue("limitDataSharing", limitDataSharing);
         }
 
@@ -296,6 +315,9 @@ namespace Singular
     [DllImport("__Internal")]
     private static extern void SetAllowAutoIAPComplete_(bool allowed);
 
+    [DllImport("__Internal")]
+    private static extern void HandlePushNotification_(string payloadJson);
+    
     [DllImport("__Internal")]
     private static extern void SetBatchesEvents_(bool allowed);
 
@@ -838,6 +860,33 @@ namespace Singular
 #endif
         }
 
+        #region Push Notifications
+        public static void HandlePushNotification(Dictionary<string, string> pushNotificationPayload)
+        {
+            if (Application.isEditor ||
+                !Initialized ||
+                !instance)
+            {
+                SingularUnityLogger.LogDebug("HandlePushNotification called before Singular SDK initialized. ignoring.");
+                return;
+            }
+
+            if (pushNotificationPayload == null)
+            {
+                SingularUnityLogger.LogDebug("HandlePushNotification called with null. ignoring.");
+                return;
+            }
+
+            string payloadAsJsonString = JsonConvert.SerializeObject(pushNotificationPayload);
+#if UNITY_IOS
+            HandlePushNotification_(payloadAsJsonString);
+#elif UNITY_ANDROID
+            SingularUnityLogger.LogDebug("SingularSDK HandlePushNotification is an iOS-only API which is not availalbe for Android. skipping.");
+#endif
+        }
+        
+        #endregion // Push Notifications
+        
         void OnApplicationPause(bool paused)
         {
             if (!Initialized || !instance)
