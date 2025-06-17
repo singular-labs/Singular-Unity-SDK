@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.4.0-KIDS";
+        private const string UNITY_VERSION      = "5.4.1-KIDS";
         
         // ios-only:
         [Obsolete]
@@ -46,7 +46,6 @@ namespace Singular
         public string facebookAppId;
         public bool collectOAID               = false;
         
-        private static string imei;
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
             static AndroidJavaClass  jclass;
@@ -199,7 +198,6 @@ namespace Singular
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
-        config.SetValue("imei", imei);
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
@@ -1706,20 +1704,6 @@ namespace Singular
             {
             }
         }
-
-#if UNITY_ANDROID
-    public static void SetIMEI(string imeiData) {
-        if (Application.isEditor) {
-            return;
-        }
-
-        if (singular != null) {
-            singular.CallStatic("setIMEI", imeiData);
-        } else {
-            imei = imeiData;
-        }
-    }
-#endif
 
         #region Global Properties
 

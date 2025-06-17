@@ -1,6 +1,6 @@
 <dependencies>
   <androidPackages>
-    <androidPackage spec="com.singular.sdk:singular_kids_sdk:12.9.0">
+    <androidPackage spec="com.singular.sdk:singular_kids_sdk:12.9.1">
       <repositories>
         <repository>https://maven.singular.net</repository>
       </repositories>
