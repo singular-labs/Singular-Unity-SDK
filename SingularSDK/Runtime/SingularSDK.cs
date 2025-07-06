@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.4.0";
+        private const string UNITY_VERSION      = "5.4.1-preview.1";
         
         #endregion // init properties
         
@@ -1240,8 +1240,9 @@ namespace Singular
         if (isRestored) {
             revenue = 0.0;
         }
-
+#pragma warning disable CS0618
         if (!product.hasReceipt) {
+#pragma warning restore CS0618
             CustomRevenue(eventName, product.metadata.isoCurrencyCode, revenue);
         } else {
             Dictionary<string, object> purchaseData = null;
@@ -1318,10 +1319,11 @@ namespace Singular
 #if UNITY_ANDROID
     private static Dictionary<string, object> BuildAndroidPurchaseAttributes(Product product, Dictionary<string, object> attributes, bool isRestored) {
         var transactionData = new Dictionary<string, object>();
-
+#pragma warning disable CS0618
         if (product.receipt == null) {
             return attributes;
         }
+#pragma warning restore CS0618
 
         if (attributes != null) {
             foreach (var item in attributes) {
@@ -1329,7 +1331,9 @@ namespace Singular
             }
         }
 
+#pragma warning disable CS0618
         var values = JsonConvert.DeserializeObject<Dictionary<string, string>>(product.receipt);
+#pragma warning restore CS0618
 
         if (values.ContainsKey("signature")) {
             transactionData["receipt_signature"] = values["signature"];
@@ -1341,7 +1345,9 @@ namespace Singular
 	
 	// this string manipulation is done in order to deal with problematic descaping on server and validating receipts.
 	// for more information: https://singularlabs.atlassian.net/browse/SDKDEV-88
+#pragma warning disable CS0618
         string receipt = Regex.Replace(product.receipt, @"\\+n", "");
+#pragma warning restore CS0618
         transactionData["receipt"] = receipt;
         transactionData["is_revenue_event"] = true;
 
