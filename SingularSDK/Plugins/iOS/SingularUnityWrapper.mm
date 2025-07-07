@@ -150,6 +150,8 @@ extern "C" {
         singularConfig.manualSkanConversionManagement = [[config objectForKey:@"manualSkanConversionManagement"] boolValue];
         singularConfig.waitForTrackingAuthorizationWithTimeoutInterval =
             [[config objectForKey:@"waitForTrackingAuthorizationWithTimeoutInterval"] intValue];
+        singularConfig.enableOdmWithTimeoutInterval =
+            [[config objectForKey:@"enableOdmWithTimeoutInterval"] intValue];
         
         singularConfig.conversionValueUpdatedCallback = ^(NSInteger conversionValue) {
             handleConversionValueUpdated(conversionValue);
