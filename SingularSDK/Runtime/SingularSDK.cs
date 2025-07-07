@@ -39,6 +39,7 @@ namespace Singular
         public bool SKANEnabled          = true;
         public bool manualSKANConversionManagement = false;
         public int  waitForTrackingAuthorizationWithTimeoutInterval = 0;
+        public int  enableODMWithTimeoutInterval = -1;
         #endregion // iOS-only
         
         #region Android-only
@@ -220,6 +221,7 @@ namespace Singular
         config.SetValue("manualSkanConversionManagement", instance.manualSKANConversionManagement);
         config.SetValue("waitForTrackingAuthorizationWithTimeoutInterval",
             instance.waitForTrackingAuthorizationWithTimeoutInterval);
+        config.SetValue("enableOdmWithTimeoutInterval", instance.enableODMWithTimeoutInterval);
 #endif
 
             return config;
