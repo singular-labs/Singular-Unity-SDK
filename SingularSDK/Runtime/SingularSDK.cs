@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Scripting;
 #if SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
 using UnityEngine.Purchasing;
 #endif // SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
@@ -2040,6 +2041,7 @@ namespace Singular
             }
         }
 
+        [Preserve]
         private class SingularGlobalProperty
         {
             public string Key { get; set; }
