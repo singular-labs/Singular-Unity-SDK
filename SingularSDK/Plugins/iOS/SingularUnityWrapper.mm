@@ -11,6 +11,23 @@
 
 enum { __STRING__,__INT__,__LONG__,__FLOAT__,__DOUBLE__,__NULL__,__ARRAY__,__DICTIONARY__};
 
+// Unity log levels
+// Verbose=2, Debug=3, Info=4, Warn=5, Error=6, Assert=7
+
+// iOS native SDK log levels (SingularLogLevel)
+// None=0, Error=1, Warning=2, Info=3, Debug=4, Verbose=5
+
+static SingularLogLevel mapUnityLogLevelToiOS(int unityLogLevel) {
+    switch (unityLogLevel) {
+        case 2: return SingularLogLevelVerbose;  
+        case 3: return SingularLogLevelDebug;    
+        case 4: return SingularLogLevelInfo;     
+        case 5: return SingularLogLevelWarning;  
+        case 6: return SingularLogLevelError;    
+        case 7: return SingularLogLevelNone;     
+        default: return SingularLogLevelInfo;
+    }
+}
 
 NSMutableDictionary *tmpDictionary;
 
@@ -209,6 +226,10 @@ extern "C" {
         if (brandedDomains && brandedDomains.count > 0) {
             singularConfig.brandedDomains = brandedDomains;
         }
+        
+        singularConfig.enableLogging = [[config objectForKey:@"enableLogging"] boolValue];
+        int logLevel = [[config objectForKey:@"logLevel"] intValue];
+        singularConfig.logLevel = mapUnityLogLevelToiOS(logLevel);
         
         [Singular start:singularConfig];
         

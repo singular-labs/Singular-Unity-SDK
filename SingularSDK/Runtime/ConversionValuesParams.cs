@@ -1,19 +1,23 @@
 using System;
 using Newtonsoft.Json;
+using UnityEngine.Scripting;
 
 namespace Singular
 {
+    [Preserve]
     [Serializable]
     public class ConversionValuesParams
     {
-        private int _value;
-        private int _coarse;
-        private bool _lock;
+        [Preserve] private int _value;
+        [Preserve] private int _coarse;
+        [Preserve] private bool _lock;
 
+        [Preserve]
         public ConversionValuesParams()
         {
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "value")]
         public int Value
         {
@@ -21,6 +25,7 @@ namespace Singular
             set { _value = value; }
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "coarse")]
         public int Coarse
         {
@@ -28,6 +33,7 @@ namespace Singular
             set { _coarse = value; }
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "lock")]
         public bool Lock
         {
