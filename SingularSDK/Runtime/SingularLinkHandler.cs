@@ -1,6 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine.Scripting;
 
 namespace Singular
 {
@@ -9,18 +10,21 @@ namespace Singular
         void OnSingularLinkResolved(SingularLinkParams linkParams);
     }
 
+    [Preserve]
     [Serializable]
     public class SingularLinkParams
     {
-        private string _deeplink;
-        private string _passthrough;
-        private bool _isDeferred;
-        private Dictionary<string, string> _urlParameters;
+        [Preserve] private string _deeplink;
+        [Preserve] private string _passthrough;
+        [Preserve] private bool _isDeferred;
+        [Preserve] private Dictionary<string, string> _urlParameters;
 
+        [Preserve]
         public SingularLinkParams()
         {
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "deeplink")]
         public string Deeplink
         {
@@ -28,7 +32,7 @@ namespace Singular
             set { _deeplink = value; }
         }
 
-
+        [Preserve]
         [JsonProperty(PropertyName = "passthrough")]
         public string Passthrough
         {
@@ -36,6 +40,7 @@ namespace Singular
             set { _passthrough = value; }
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "is_deferred")]
         public bool IsDeferred
         {
@@ -43,6 +48,7 @@ namespace Singular
             set { _isDeferred = value; }
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "url_parameters")]
         public Dictionary<string, string> UrlParameters
         {
