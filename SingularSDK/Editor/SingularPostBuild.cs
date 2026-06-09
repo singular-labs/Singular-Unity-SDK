@@ -44,7 +44,7 @@ public class SingularPostBuild
         pbxProject.AddFrameworkToProject(targetGuid, "Security.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "SystemConfiguration.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "AdSupport.framework", false);
-        pbxProject.AddFrameworkToProject(targetGuid, "Webkit.framework", false);
+        pbxProject.AddFrameworkToProject(targetGuid, "WebKit.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "StoreKit.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "AdServices.framework", true); // optional=true
         
