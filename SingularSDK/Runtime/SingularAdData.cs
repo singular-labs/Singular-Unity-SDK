@@ -28,6 +28,7 @@ namespace Singular
         private const string ADMON_AD_GROUP_PRIORITY = "ad_group_priority";
         private const string ADMON_PRECISION = "ad_precision";
         private const string ADMON_PLACEMENT_ID = "ad_placement_id";
+        private const string LIMIT_DATA_SHARING_ARG_KEY = "sng_attr_limit_data_sharing";
         private const string IS_REVENUE_EVENT_KEY = "is_revenue_event";
         private const string REVENUE_AMOUNT_KEY = "r";
         private const string REVENUE_CURRENCY_KEY = "pcc";
@@ -126,6 +127,12 @@ namespace Singular
         public SingularAdData WithPlacementId(string placementId)
         {
             SetValue(ADMON_PLACEMENT_ID, placementId);
+            return this;
+        }
+
+        public SingularAdData WithLimitDataSharing(bool shouldLimitDataSharing)
+        {
+            SetValue(LIMIT_DATA_SHARING_ARG_KEY, shouldLimitDataSharing);
             return this;
         }
 
