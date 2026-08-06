@@ -31,7 +31,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.8.0";
+        private const string UNITY_VERSION      = "5.9.0";
         
         #endregion // init properties
         
