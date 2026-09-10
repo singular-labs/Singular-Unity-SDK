@@ -157,6 +157,46 @@ static void handleConversionValuesUpdated(int value, int coarse, bool lock) {
     sendSdkMessage("ConversionValuesUpdated", jsonString);
 }
 
+static SingularUserDetails* userDetailsFromDictionary(NSDictionary *userDetailsDictionary) {
+    if (![userDetailsDictionary isKindOfClass:[NSDictionary class]] || [userDetailsDictionary count] == 0) {
+        return nil;
+    }
+
+    SingularUserDetails *userDetails = [[SingularUserDetails alloc] init];
+
+    NSString *email = [userDetailsDictionary objectForKey:@"email"];
+    if (email) {
+        [userDetails setEmail:email];
+    }
+
+    NSString *phoneNumber = [userDetailsDictionary objectForKey:@"phoneNumber"];
+    if (phoneNumber) {
+        [userDetails setPhoneNumber:phoneNumber];
+    }
+
+    NSString *emailSTD = [userDetailsDictionary objectForKey:@"emailSTD"];
+    if (emailSTD) {
+        [userDetails setEmailSTD:emailSTD];
+    }
+
+    NSString *emailNoDots = [userDetailsDictionary objectForKey:@"emailNoDots"];
+    if (emailNoDots) {
+        [userDetails setEmailNoDots:emailNoDots];
+    }
+
+    NSString *phoneE164 = [userDetailsDictionary objectForKey:@"phoneE164"];
+    if (phoneE164) {
+        [userDetails setPhoneE164:phoneE164];
+    }
+
+    NSString *phoneDigits = [userDetailsDictionary objectForKey:@"phoneDigits"];
+    if (phoneDigits) {
+        [userDetails setPhoneDigits:phoneDigits];
+    }
+
+    return userDetails;
+}
+
 extern "C" {
 
     bool createReferrerShortLink_(const char *baseLink,
@@ -269,7 +309,12 @@ extern "C" {
         singularConfig.enableLogging = [[config objectForKey:@"enableLogging"] boolValue];
         int logLevel = [[config objectForKey:@"logLevel"] intValue];
         singularConfig.logLevel = mapUnityLogLevelToiOS(logLevel);
-        
+
+        SingularUserDetails *userDetails = userDetailsFromDictionary([config objectForKey:@"userDetails"]);
+        if (userDetails) {
+            singularConfig.userDetails = userDetails;
+        }
+
         [Singular start:singularConfig];
         
         return true;
@@ -606,6 +651,35 @@ extern "C" {
 
     void ClearGlobalProperties_() {
         [Singular clearGlobalProperties];
+    }
+
+    /* User Details */
+
+    void SetUserDetails_(const char* userDetailsJson) {
+        if (!userDetailsJson) {
+            NSLog(@"[SingularUnityBridge] SetUserDetails_ called with NULL user details, clearing the user details");
+            [Singular clearUserDetails];
+            return;
+        }
+
+        NSDictionary *userDetailsDictionary =
+            [NSJSONSerialization JSONObjectWithData:[[NSString stringWithUTF8String:userDetailsJson]
+                                                     dataUsingEncoding:NSUTF8StringEncoding]
+                                            options:0
+                                              error:nil];
+
+        SingularUserDetails *userDetails = userDetailsFromDictionary(userDetailsDictionary);
+        if (!userDetails) {
+            NSLog(@"[SingularUnityBridge] SetUserDetails_ could not build user details from the given json, clearing the user details");
+            [Singular clearUserDetails];
+            return;
+        }
+
+        [Singular setUserDetails:userDetails];
+    }
+
+    void ClearUserDetails_() {
+        [Singular clearUserDetails];
     }
 
     /* SKAN Methods */

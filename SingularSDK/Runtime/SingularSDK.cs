@@ -31,7 +31,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.9.0";
+        private const string UNITY_VERSION      = "5.10.0";
         
         #endregion // init properties
         
@@ -66,6 +66,8 @@ namespace Singular
         private static bool? limitDataSharing = null;
         private static string customUserId;
         public bool limitAdvertisingIdentifiers = false;
+
+        private static SingularUserDetails userDetails = null;
         
         #region Deeplinks
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
@@ -204,6 +206,11 @@ namespace Singular
             config.SetValue("brandedDomains", instance.brandedDomains);
             config.SetValue("enableLogging", instance.enableLogging);
             config.SetValue("logLevel", instance.logLevel);
+
+            if (userDetails != null)
+            {
+                config.SetValue("userDetails", userDetails.ToDictionary());
+            }
 
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
@@ -456,6 +463,12 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern void SetLimitAdvertisingIdentifiers_(bool isEnabled);
+
+    [DllImport("__Internal")]
+    private static extern void SetUserDetails_(string userDetailsJson);
+
+    [DllImport("__Internal")]
+    private static extern void ClearUserDetails_();
 
     [DllImport("__Internal")]
     private static extern void SkanRegisterAppForAdNetworkAttribution_();
@@ -2084,6 +2097,71 @@ namespace Singular
 #elif UNITY_ANDROID
         if (singular != null) {
             singular.CallStatic("clearGlobalProperties");
+        }
+#endif
+        }
+
+        public static void SetUserDetails(SingularUserDetails details)
+        {
+            if (Application.isEditor)
+            {
+                SingularUnityLogger.LogDebug("running in editor, ignoring SetUserDetails.");
+                return;
+            }
+
+            // both native SDKs treat a null value as a clear
+            if (details == null || details.IsEmpty())
+            {
+                SingularUnityLogger.LogDebug("SetUserDetails called with null or empty user details, clearing the user details.");
+                ClearUserDetails();
+                return;
+            }
+
+            userDetails = details;
+
+            if (!Initialized)
+            {
+                // picked up by BuildSingularConfig when the SDK initializes
+                SingularUnityLogger.LogDebug("SetUserDetails called before the SDK was initialized, the user details will be sent on init.");
+                return;
+            }
+
+            SingularUnityLogger.LogDebug("SetUserDetails called, passing the user details to the native SDK.");
+
+            string userDetailsJson = details.ToJsonString();
+
+#if UNITY_IOS
+        SetUserDetails_(userDetailsJson);
+#elif UNITY_ANDROID
+        if (jniSingularUnityBridge != null) {
+            jniSingularUnityBridge.CallStatic("setUserDetails", userDetailsJson);
+        }
+#endif
+        }
+
+        public static void ClearUserDetails()
+        {
+            if (Application.isEditor)
+            {
+                SingularUnityLogger.LogDebug("running in editor, ignoring ClearUserDetails.");
+                return;
+            }
+
+            userDetails = null;
+
+            if (!Initialized)
+            {
+                SingularUnityLogger.LogDebug("ClearUserDetails called before the SDK was initialized, cleared the pending user details.");
+                return;
+            }
+
+            SingularUnityLogger.LogDebug("ClearUserDetails called, clearing the user details in the native SDK.");
+
+#if UNITY_IOS
+        ClearUserDetails_();
+#elif UNITY_ANDROID
+        if (singular != null) {
+            singular.CallStatic("clearUserDetails");
         }
 #endif
         }
