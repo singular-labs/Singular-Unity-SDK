@@ -1,18 +1,22 @@
 using System;
 using Newtonsoft.Json;
+using UnityEngine.Scripting;
 
 namespace Singular
 {
+    [Preserve]
     [Serializable]
     public class ShortLinkParams
     {
-        private string data;
-        private string error;
+        [Preserve] private string data;
+        [Preserve] private string error;
 
+        [Preserve]
         public ShortLinkParams()
         {
         }
 
+        [Preserve]
         [JsonProperty(PropertyName = "data")]
         public string Data
         {
@@ -20,14 +24,12 @@ namespace Singular
             set { data = value; }
         }
 
-
+        [Preserve]
         [JsonProperty(PropertyName = "error")]
         public string Error
         {
             get { return error; }
             set { error = value; }
         }
-
-
     }
 }

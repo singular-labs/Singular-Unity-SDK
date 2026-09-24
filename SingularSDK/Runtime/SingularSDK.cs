@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Scripting;
 #if SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
 using UnityEngine.Purchasing;
 #endif // SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
@@ -30,7 +31,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.6.0-KIDS";
+        private const string UNITY_VERSION      = "5.10.1-KIDS";
         
         #endregion // init properties
         
@@ -47,8 +48,7 @@ namespace Singular
         #region Android-only
         public static string fcmDeviceToken    = null;
         public string facebookAppId;
-        public bool collectOAID               = false;
-        
+
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
             static AndroidJavaClass  jclass;
@@ -63,7 +63,7 @@ namespace Singular
         private Dictionary<string, SingularGlobalProperty> globalProperties = new Dictionary<string, SingularGlobalProperty>();
         private static bool? limitDataSharing = null;
         private static string customUserId;
-        
+
         #region Deeplinks
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
         public long sessionTimeoutSec = 0; // default value (0) sets to default timeout (60s)
@@ -198,21 +198,21 @@ namespace Singular
             config.SetValue("customSdid", CustomSdid);
             config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
             config.SetValue("brandedDomains", instance.brandedDomains);
+            config.SetValue("enableLogging", instance.enableLogging);
+            config.SetValue("logLevel", instance.logLevel);
+
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
-        config.SetValue("enableLogging", instance.enableLogging);
-        config.SetValue("logLevel", instance.logLevel);
         if (SingularSDK.fcmDeviceToken != null)
         {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
-        config.SetValue("collectOAID", instance.collectOAID);
 
-        if (limitDataSharing != null) 
+        if (limitDataSharing != null)
         {
             config.SetValue("limitDataSharing", limitDataSharing);
         }
@@ -281,6 +281,7 @@ namespace Singular
             FLOAT,
             DOUBLE,
             NULL,
+            BOOL,
             ARRAY,
             DICTIONARY,
         }
@@ -478,6 +479,8 @@ namespace Singular
                     type = NSType.FLOAT;
                 } else if (valueType == typeof(double)) {
                     type = NSType.DOUBLE;
+                } else if (valueType == typeof(bool)) {
+                    type = NSType.BOOL;
                 } else if (valueType == typeof(Dictionary<string, object>)) {
                     type = NSType.DICTIONARY;
                     CreateDictionary(dictionaryIndex, NSType.DICTIONARY, enumerator.Current.Key, (Dictionary<string, object>)enumerator.Current.Value);
@@ -487,7 +490,10 @@ namespace Singular
                 }
 
                 if ((int)type < (int)NSType.ARRAY) {
-                    Push_To_Child_Dictionary(enumerator.Current.Key, enumerator.Current.Value.ToString(), (int)type, dictionaryIndex);
+                    string pushVal = type == NSType.BOOL
+                        ? ((bool)enumerator.Current.Value ? "1" : "0")
+                        : enumerator.Current.Value.ToString();
+                    Push_To_Child_Dictionary(enumerator.Current.Key, pushVal, (int)type, dictionaryIndex);
                 }
             }
         }
@@ -524,6 +530,8 @@ namespace Singular
                     type = NSType.FLOAT;
                 } else if (valueType == typeof(double)) {
                     type = NSType.DOUBLE;
+                } else if (valueType == typeof(bool)) {
+                    type = NSType.BOOL;
                 } else if (valueType == typeof(Dictionary<string, object>)) {
                     type = NSType.DICTIONARY;
                     CreateDictionary(arrayIndex, NSType.ARRAY, "", (Dictionary<string, object>)o);
@@ -533,7 +541,8 @@ namespace Singular
                 }
 
                 if ((int)type < (int)NSType.ARRAY) {
-                    Push_To_Child_Array(o.ToString(), (int)type, arrayIndex);
+                    string pushVal = type == NSType.BOOL ? ((bool)o ? "1" : "0") : o.ToString();
+                    Push_To_Child_Array(pushVal, (int)type, arrayIndex);
                 }
             }
         }
@@ -595,6 +604,8 @@ namespace Singular
                         type = NSType.FLOAT;
                     } else if (valueType == typeof(double)) {
                         type = NSType.DOUBLE;
+                    } else if (valueType == typeof(bool)) {
+                        type = NSType.BOOL;
                     } else if (valueType == typeof(Dictionary<string, object>)) {
                         type = NSType.DICTIONARY;
                         CreateDictionary(-1, NSType.DICTIONARY, enumerator.Current.Key, (Dictionary<string, object>)enumerator.Current.Value);
@@ -604,7 +615,10 @@ namespace Singular
                     }
 
                     if ((int)type < (int)NSType.ARRAY) {
-                        Push_NSDictionary(enumerator.Current.Key, enumerator.Current.Value.ToString(), (int)type);
+                        string pushVal = type == NSType.BOOL
+                            ? ((bool)enumerator.Current.Value ? "1" : "0")
+                            : enumerator.Current.Value.ToString();
+                        Push_NSDictionary(enumerator.Current.Key, pushVal, (int)type);
                     }
                 }
             }
@@ -666,6 +680,11 @@ namespace Singular
             if (!Initialized)
                 return;
 
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
             if (!Application.isEditor)
             {
 #if UNITY_IOS
@@ -692,6 +711,15 @@ namespace Singular
             if (!Initialized)
                 return;
 
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
+            if (args == null) {
+                args = new Dictionary<string, object>();
+            }
+
             if (!Application.isEditor)
             {
 #if UNITY_IOS
@@ -717,6 +745,8 @@ namespace Singular
                         type = NSType.FLOAT;
                     } else if (valueType == typeof(double) || valueType == typeof(decimal) ) {
                         type = NSType.DOUBLE;
+                    } else if (valueType == typeof(bool)) {
+                        type = NSType.BOOL;
                     } else if (valueType == typeof(Dictionary<string, object>)) {
                         type = NSType.DICTIONARY;
                         CreateDictionary(-1, NSType.DICTIONARY, enumerator.Current.Key, (Dictionary<string, object>)enumerator.Current.Value);
@@ -731,7 +761,7 @@ namespace Singular
                     /*
                      *the Push_NSDictionary parses the stringVal to NSNumber in case the passed type is numeric (INT, FLOAT, DOUBLE...)
                      *in case the number is floating point, we need to convert it to string with en-US locale because otherwise,
-                     *it will be converted according to the hosting app's locale, and some locales use a comma instead of a decimal point, 
+                     *it will be converted according to the hosting app's locale, and some locales use a comma instead of a decimal point,
                      *so that Push_NSDictionary will have trouble parsing it to NSNumber (for ex. 1.235 will be sent as 1,235)
                     */
                     if (valueType == typeof(float)){
@@ -740,6 +770,8 @@ namespace Singular
                         stringVal = ((double)enumerator.Current.Value).ToString(specifier, culture);
                     }else if (valueType == typeof(decimal)){
                         stringVal = ((decimal)enumerator.Current.Value).ToString(specifier, culture);
+                    }else if (valueType == typeof(bool)){
+                        stringVal = (bool)enumerator.Current.Value ? "1" : "0";
                     }else{
                         stringVal = enumerator.Current.Value.ToString();
                     }
@@ -772,6 +804,11 @@ namespace Singular
             if (!Initialized)
                 return;
 
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
             if (!Application.isEditor)
             {
 #if UNITY_IOS || UNITY_ANDROID
@@ -781,6 +818,10 @@ namespace Singular
                 Dictionary<string, object> dict = new Dictionary<string, object>();
 
                 for (int i = 0; i < args.Length; i += 2) {
+                    if (args[i] == null) {
+                        SingularUnityLogger.LogWarn("Event argument key at index " + i + " is null, skipping this key-value pair.");
+                        continue;
+                    }
                     dict.Add(args[i].ToString(), args[i + 1]);
                 }
 
@@ -1357,7 +1398,7 @@ namespace Singular
 #endif // SINGULAR_SDK_IAP_ENABLED__IAP_4
 #if SINGULAR_SDK_IAP_ENABLED__IAP_5
         transactionData["pti"] = order.Info.TransactionID;
-        transactionData["ptr"] = ExtractIOSTransactionReceipt(order.Info.Receipt);
+        transactionData["ptr"] = ExtractIOSTransactionReceipt(order);
 #endif // SINGULAR_SDK_IAP_ENABLED__IAP_5
         transactionData["is_revenue_event"] = true;
         
@@ -1376,21 +1417,72 @@ namespace Singular
         return transactionData;
     }
 
+#if SINGULAR_SDK_IAP_ENABLED__IAP_4
     private static string ExtractIOSTransactionReceipt(string receipt) {
-        if (string.IsNullOrEmpty(receipt.Trim())) {
+        if (string.IsNullOrEmpty(receipt?.Trim())) {
+            SingularUnityLogger.LogWarn("Receipt is empty; no receipt to extract");
             return null;
         }
 
-        Dictionary<string, string> values = JsonConvert.DeserializeObject<Dictionary<string, string>>(receipt);
+        try
+        {
+            Dictionary<string, string> values = JsonConvert.DeserializeObject<Dictionary<string, string>>(receipt);
 
-        const string payloadParamKey = "Payload"; 
-        
-        if (!values.ContainsKey(payloadParamKey)) {
+            const string payloadParamKey = "Payload";
+
+            if (values == null || !values.ContainsKey(payloadParamKey)) {
+                return null;
+            }
+
+            return values[payloadParamKey];
+        }
+        catch (JsonException)
+        {
+            SingularUnityLogger.LogWarn("Failed to parse legacy receipt JSON");
             return null;
         }
-
-        return values[payloadParamKey];
     }
+#endif // SINGULAR_SDK_IAP_ENABLED__IAP_4
+
+#if SINGULAR_SDK_IAP_ENABLED__IAP_5
+    private static string ExtractIOSTransactionReceipt(Order order) {
+
+        var jws = order?.Info?.Apple?.jwsRepresentation?.Trim();
+        if (!string.IsNullOrEmpty(jws))
+        {
+            return jws;
+        }
+
+        SingularUnityLogger.LogWarn("JWS receipt missing. Falling back to legacy method");
+
+        // Fallback to the legacy receipt payload if JWS isn't available
+        var rawReceipt = order?.Info?.Receipt?.Trim();
+        if (string.IsNullOrEmpty(rawReceipt))
+        {
+            SingularUnityLogger.LogWarn("Legacy receipt also missing; no receipt to extract");
+            return null;
+        }
+
+        try
+        {
+            Dictionary<string, string> values = JsonConvert.DeserializeObject<Dictionary<string, string>>(rawReceipt);
+
+            const string payloadParamKey = "Payload";
+
+            if (values == null || !values.ContainsKey(payloadParamKey)) {
+                return null;
+            }
+
+            return values[payloadParamKey];
+        }
+        catch (JsonException)
+        {
+            SingularUnityLogger.LogWarn("Failed to parse legacy receipt JSON");
+            return null;
+
+        }
+    }
+#endif // SINGULAR_SDK_IAP_ENABLED__IAP_5
 
 #endif // UNITY_IOS
 
@@ -1487,6 +1579,11 @@ namespace Singular
             {
                 return;
             }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
+                return;
+            }
 #if UNITY_IOS
         CustomRevenue_(eventName, currency, amount);
 #elif UNITY_ANDROID
@@ -1516,6 +1613,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 #if UNITY_ANDROID
@@ -1549,6 +1651,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 #if UNITY_IOS
@@ -1592,6 +1699,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 
@@ -1815,7 +1927,7 @@ namespace Singular
 
             return false;
         }
-
+        
         public static void AdRevenue(SingularAdData adData)
         {
             try
@@ -1988,12 +2100,14 @@ namespace Singular
             }
         }
 
+        [Preserve]
         private class SingularGlobalProperty
         {
-            public string Key { get; set; }
-            public string Value { get; set; }
-            public bool OverrideExisting { get; set; }
+            [Preserve] public string Key { get; set; }
+            [Preserve] public string Value { get; set; }
+            [Preserve] public bool OverrideExisting { get; set; }
 
+            [Preserve]
             public SingularGlobalProperty(string key, string value, bool overrideExisting)
             {
                 Key = key;

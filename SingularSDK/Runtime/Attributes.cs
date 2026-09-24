@@ -34,5 +34,6 @@ namespace Singular
 		public const string sngAttrTransactionId = "sng_attr_transaction_id";
 		public const string sngAttrTutorialId = "sng_attr_tutorial_id";
 		public const string sngAttrValid = "sng_attr_valid";
+		public const string sngAttrLimitDataSharing = "sng_attr_limit_data_sharing";
 	}
 }
