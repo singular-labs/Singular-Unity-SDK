@@ -47,8 +47,18 @@ continueUserActivity:(NSUserActivity *)userActivity
        withSingularLinkHandler:singularLinkHandler
     andShortLinkResolveTimeout:shortlinkResolveTimeout];
     }
-    
+
     return YES;
+}
+
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options {
+    BOOL handled = [super application:application openURL:url options:options];
+
+    [SingularStateWrapper startSessionWithOpenUrl:url];
+
+    return handled;
 }
 
 

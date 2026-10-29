@@ -31,7 +31,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.10.1";
+        private const string UNITY_VERSION      = "5.11.0";
         
         #endregion // init properties
         
@@ -66,6 +66,7 @@ namespace Singular
         private static bool? limitDataSharing = null;
         private static string customUserId;
         public bool limitAdvertisingIdentifiers = false;
+        public bool collectIpv6Address = true;
 
         private static SingularUserDetails userDetails = null;
         
@@ -203,6 +204,7 @@ namespace Singular
             config.SetValue("customSdid", CustomSdid);
             config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
             config.SetValue("limitAdvertisingIdentifiers", instance.limitAdvertisingIdentifiers);
+            config.SetValue("collectIpv6Address", instance.collectIpv6Address);
             config.SetValue("brandedDomains", instance.brandedDomains);
             config.SetValue("enableLogging", instance.enableLogging);
             config.SetValue("logLevel", instance.logLevel);
@@ -463,6 +465,9 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern void SetLimitAdvertisingIdentifiers_(bool isEnabled);
+
+    [DllImport("__Internal")]
+    private static extern void SetCollectIpv6Address_(bool isEnabled);
 
     [DllImport("__Internal")]
     private static extern void SetUserDetails_(string userDetailsJson);
@@ -1976,6 +1981,22 @@ namespace Singular
         if (singular != null)
         {
             singular.CallStatic("setLimitAdvertisingIdentifiers", isEnabled);
+        }
+#endif
+        }
+
+        public static void SetCollectIpv6Address(bool isEnabled)
+        {
+            if (Application.isEditor)
+            {
+                return;
+            }
+#if UNITY_IOS
+        SetCollectIpv6Address_(isEnabled);
+#elif UNITY_ANDROID
+        if (singular != null)
+        {
+            singular.CallStatic("setCollectIpv6Address", isEnabled);
         }
 #endif
         }

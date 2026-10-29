@@ -24,4 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface SingularStateWrapper (SingularUnityWrapper)
+
++(void)startSessionWithOpenUrl:(nullable NSURL*)url;
+
+@end
+
 NS_ASSUME_NONNULL_END
