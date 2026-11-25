@@ -9,12 +9,14 @@
 /*
 static IMP originalContinueUserActivity __unused;
 static IMP originalDidFinishLaunchingWithOptions __unused;
+static IMP originalOpenURL __unused;
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self swizzleDidFinishLaunchingWithOptions:[self class]];
         [self swizzleContinueUserActivity:[self class]];
+        [self swizzleOpenURL:[self class]];
     });
 }
 
@@ -52,8 +54,20 @@ BOOL continueUserActivity(id self, SEL _cmd, UIApplication* application, NSUserA
     if(originalContinueUserActivity){
         return ((BOOL(*)(id, SEL, UIApplication*, NSUserActivity*))originalContinueUserActivity)(self, _cmd, application, userActivity);
     }
-    
+
     return YES;
+}
+
+BOOL openURL(id self, SEL _cmd, UIApplication* application, NSURL* url, NSDictionary* options) {
+    BOOL handled = YES;
+
+    if(originalOpenURL){
+        handled = ((BOOL(*)(id, SEL, UIApplication*, NSURL*, NSDictionary*))originalOpenURL)(self, _cmd, application, url, options);
+    }
+
+    [SingularStateWrapper startSessionWithOpenUrl:url];
+
+    return handled;
 }
 
 +(void)swizzleDidFinishLaunchingWithOptions:(Class)klass {
@@ -85,6 +99,22 @@ BOOL continueUserActivity(id self, SEL _cmd, UIApplication* application, NSUserA
         originalContinueUserActivity = method_setImplementation(defaultMethod, (IMP)continueUserActivity);
     } else {
         class_replaceMethod(klass, originalSelector, (IMP)continueUserActivity, method_getTypeEncoding(swizzledMethod));
+    }
+}
+
++(void)swizzleOpenURL:(Class)klass {
+
+    SEL originalSelector = @selector(application:openURL:options:);
+
+    Method defaultMethod = class_getInstanceMethod(klass, originalSelector);
+    Method swizzledMethod = class_getInstanceMethod(klass, @selector(__swizzled_openURL));
+
+    BOOL isMethodExists = !class_addMethod(klass, originalSelector, method_getImplementation(swizzledMethod), method_getTypeEncoding(swizzledMethod));
+
+    if (isMethodExists) {
+        originalOpenURL = method_setImplementation(defaultMethod, (IMP)openURL);
+    } else {
+        class_replaceMethod(klass, originalSelector, (IMP)openURL, method_getTypeEncoding(swizzledMethod));
     }
 }
  */

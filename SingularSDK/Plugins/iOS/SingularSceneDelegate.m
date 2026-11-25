@@ -19,6 +19,7 @@ static NSString* const kUserActivityKey = @"UIApplicationLaunchOptionsUserActivi
 
 static IMP originalSceneContinueUserActivity;
 static IMP originalSceneWillConnect;
+static IMP originalSceneOpenURLContexts;
 
 + (BOOL)isBrowsingActivity:(NSUserActivity *)activity {
     return activity != nil &&
@@ -76,10 +77,20 @@ static void sl_sceneWillConnect(id self, SEL _cmd, UIScene* scene, UISceneSessio
                 kUserActivityKey: userActivity
             }
         }];
+    } else {
+        [SingularStateWrapper startSessionWithOpenUrl:connectionOptions.URLContexts.anyObject.URL];
     }
 
     if (originalSceneWillConnect) {
         ((void(*)(id, SEL, UIScene*, UISceneSession*, UISceneConnectionOptions*))originalSceneWillConnect)(self, _cmd, scene, session, connectionOptions);
+    }
+}
+
+static void sl_sceneOpenURLContexts(id self, SEL _cmd, UIScene* scene, NSSet<UIOpenURLContext*>* URLContexts) {
+    [SingularStateWrapper startSessionWithOpenUrl:URLContexts.anyObject.URL];
+
+    if (originalSceneOpenURLContexts) {
+        ((void(*)(id, SEL, UIScene*, NSSet<UIOpenURLContext*>*))originalSceneOpenURLContexts)(self, _cmd, scene, URLContexts);
     }
 }
 
@@ -114,6 +125,11 @@ static IMP sl_replaceMethod(Class klass, SEL sel, IMP newImp, const char* typeEn
             @selector(scene:willConnectToSession:options:),
             (IMP)sl_sceneWillConnect,
             "v@:@@@");
+
+        originalSceneOpenURLContexts = sl_replaceMethod(unityScene,
+            @selector(scene:openURLContexts:),
+            (IMP)sl_sceneOpenURLContexts,
+            "v@:@@");
     });
 }
 

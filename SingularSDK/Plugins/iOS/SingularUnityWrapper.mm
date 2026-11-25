@@ -7,7 +7,9 @@
 
 #import <Singular/Singular.h>
 #import "SingularStateWrapper.h"
-#import <AdSupport/ASIdentifierManager.h>
+
+
+
 #include <exception>
 
 enum { __STRING__,__INT__,__LONG__,__FLOAT__,__DOUBLE__,__NULL__,__BOOL__,__ARRAY__,__DICTIONARY__};
@@ -157,6 +159,150 @@ static void handleConversionValuesUpdated(int value, int coarse, bool lock) {
     sendSdkMessage("ConversionValuesUpdated", jsonString);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+static NSDictionary* singularConfigDict;
+static SingularConfig* currentConfig;
+
+// Config fields that are safe to rebuild on warm resume.
+static SingularConfig* buildSingularConfig(NSDictionary *config) {
+    NSString *apiKey = [config objectForKey:@"apiKey"];
+    NSString *apiSecret = [config objectForKey:@"secret"];
+    void (^singularLinkHandler)(SingularLinkParams*) = ^(SingularLinkParams* params) {
+        handleSingularLinkParams(params);
+    };
+    
+    int shortlinkResolveTimeout = [[config objectForKey:@"shortlinkResolveTimeout"] integerValue];
+
+    SingularConfig* singularConfig = [[SingularConfig alloc] initWithApiKey:apiKey andSecret:apiSecret];
+    singularConfig.shortLinkResolveTimeOut = shortlinkResolveTimeout;
+    singularConfig.singularLinksHandler = singularLinkHandler;
+    singularConfig.skAdNetworkEnabled = [[config objectForKey:@"skAdNetworkEnabled"] boolValue];
+    singularConfig.clipboardAttribution = [[config objectForKey:@"clipboardAttribution"] boolValue];
+    singularConfig.manualSkanConversionManagement = [[config objectForKey:@"manualSkanConversionManagement"] boolValue];
+    singularConfig.waitForTrackingAuthorizationWithTimeoutInterval =
+        [[config objectForKey:@"waitForTrackingAuthorizationWithTimeoutInterval"] intValue];
+    singularConfig.enableOdmWithTimeoutInterval =
+        [[config objectForKey:@"enableOdmWithTimeoutInterval"] intValue];
+    
+    singularConfig.conversionValueUpdatedCallback = ^(NSInteger conversionValue) {
+        handleConversionValueUpdated(conversionValue);
+    };
+
+    singularConfig.conversionValuesUpdatedCallback = ^(NSNumber * conversionValue, NSNumber * coarse, BOOL lock) {
+        handleConversionValuesUpdated(conversionValue ? [conversionValue intValue] : -1, coarse ? [coarse intValue] :  -1, lock);
+    };
+
+    singularConfig.deviceAttributionCallback = ^(NSDictionary *deviceAttributionInfo) {
+        handleDeviceAttributionData(deviceAttributionInfo);
+    };
+
+    NSString *customSdid = [config objectForKey:@"customSdid"];
+    singularConfig.customSdid = customSdid;
+    
+    singularConfig.sdidReceivedHandler = ^(NSString *result) {
+        sendSdkMessage("SingularSdidReceived", result);
+    };
+
+    singularConfig.didSetSdidHandler = ^(NSString *result) {
+        sendSdkMessage("SingularDidSetSdid", result);
+    };
+    
+    NSArray *pushLinkPaths = [config objectForKey:@"pushNotificationLinkPath"];
+    if (pushLinkPaths && pushLinkPaths.count > 0) {
+        singularConfig.pushNotificationLinkPath = pushLinkPaths;
+    }
+    
+
+
+
+
+    
+    NSArray *brandedDomains = [config objectForKey:@"brandedDomains"];
+    if (brandedDomains && brandedDomains.count > 0) {
+        singularConfig.brandedDomains = brandedDomains;
+    }
+    
+    singularConfig.enableLogging = [[config objectForKey:@"enableLogging"] boolValue];
+    int logLevel = [[config objectForKey:@"logLevel"] intValue];
+    singularConfig.logLevel = mapUnityLogLevelToiOS(logLevel);
+
+    return singularConfig;
+}
+
+@implementation SingularStateWrapper (SingularUnityWrapper)
+
+// Handling a Singular Link delivered as a URL scheme, on both cold launch and warm resume.
++(void)startSessionWithOpenUrl:(NSURL*)url{
+    if (!url){
+        return;
+    }
+
+    // Cold launch: StartSingularSession_ picks the link up from launchOptions.
+    if (!currentConfig){
+        NSMutableDictionary* options = [[SingularStateWrapper getLaunchOptions] mutableCopy] ?: [NSMutableDictionary dictionary];
+        options[UIApplicationLaunchOptionsURLKey] = url;
+        [SingularStateWrapper setLaunchOptions:options];
+        return;
+    }
+
+    // Warm resume: start: is the only native entry point for a scheme link on a running session.
+    SingularConfig* singularConfig = buildSingularConfig(singularConfigDict);
+    singularConfig.openUrl = url;
+
+    // Keep the value set at runtime, which the SDK only stores on its live config.
+
+
+
+
+
+    currentConfig = singularConfig;
+
+    [Singular start:singularConfig];
+}
+
+@end
+
 extern "C" {
 
     bool createReferrerShortLink_(const char *baseLink,
@@ -183,40 +329,16 @@ extern "C" {
     bool StartSingularSession_(const char *configString){
         NSDictionary *config = [NSJSONSerialization JSONObjectWithData:[[NSString stringWithUTF8String:configString]
                                                                         dataUsingEncoding:NSUTF8StringEncoding] options:0 error:nil];
-        
-        NSString *apiKey = [config objectForKey:@"apiKey"];
-        NSString *apiSecret = [config objectForKey:@"secret"];
-        void (^singularLinkHandler)(SingularLinkParams*) = ^(SingularLinkParams* params) {
-            handleSingularLinkParams(params);
-        };
-        
-        int shortlinkResolveTimeout = [[config objectForKey:@"shortlinkResolveTimeout"] integerValue];
-        
+
+        SingularConfig* singularConfig = buildSingularConfig(config);
+
         [SingularStateWrapper
-         enableSingularLinks:apiKey
-         withSecret:apiSecret
-         andHandler:singularLinkHandler
-         withTimeout:shortlinkResolveTimeout];
+         enableSingularLinks:singularConfig.apikey
+         withSecret:singularConfig.secret
+         andHandler:singularConfig.singularLinksHandler
+         withTimeout:(int)singularConfig.shortLinkResolveTimeOut];
 
-        SingularConfig* singularConfig = [[SingularConfig alloc] initWithApiKey:apiKey andSecret:apiSecret];
-        singularConfig.shortLinkResolveTimeOut = shortlinkResolveTimeout;
-        singularConfig.singularLinksHandler = singularLinkHandler;
-        singularConfig.skAdNetworkEnabled = [[config objectForKey:@"skAdNetworkEnabled"] boolValue];
-        singularConfig.clipboardAttribution = [[config objectForKey:@"clipboardAttribution"] boolValue];
-        singularConfig.manualSkanConversionManagement = [[config objectForKey:@"manualSkanConversionManagement"] boolValue];
-        singularConfig.waitForTrackingAuthorizationWithTimeoutInterval =
-            [[config objectForKey:@"waitForTrackingAuthorizationWithTimeoutInterval"] intValue];
-        singularConfig.enableOdmWithTimeoutInterval =
-            [[config objectForKey:@"enableOdmWithTimeoutInterval"] intValue];
-        
-        singularConfig.conversionValueUpdatedCallback = ^(NSInteger conversionValue) {
-            handleConversionValueUpdated(conversionValue);
-        };
-
-        singularConfig.conversionValuesUpdatedCallback = ^(NSNumber * conversionValue, NSNumber * coarse, BOOL lock) {
-            handleConversionValuesUpdated(conversionValue ? [conversionValue intValue] : -1, coarse ? [coarse intValue] :  -1, lock);
-        };
-        
+        // Not re-applied on warm resume, so runtime changes aren't overwritten.
         NSDictionary* globalProperties = [config objectForKey:@"globalProperties"];
         if ([globalProperties count] > 0){
              for (NSDictionary* property in [globalProperties allValues]) {
@@ -238,37 +360,16 @@ extern "C" {
         if (sessionTimeoutSec > 0) {
             [Singular setSessionTimeout:sessionTimeoutSec];
         }
-        
-        singularConfig.deviceAttributionCallback = ^(NSDictionary *deviceAttributionInfo) {
-            handleDeviceAttributionData(deviceAttributionInfo);
-        };
 
-        NSString *customSdid = [config objectForKey:@"customSdid"];
-        singularConfig.customSdid = customSdid;
-        
-        singularConfig.sdidReceivedHandler = ^(NSString *result) {
-            sendSdkMessage("SingularSdidReceived", result);
-        };
 
-        singularConfig.didSetSdidHandler = ^(NSString *result) {
-            sendSdkMessage("SingularDidSetSdid", result);
-        };
-        
-        NSArray *pushLinkPaths = [config objectForKey:@"pushNotificationLinkPath"];
-        if (pushLinkPaths && pushLinkPaths.count > 0) {
-            singularConfig.pushNotificationLinkPath = pushLinkPaths;
-        }
-        
-        // Not exposed for Kids: Singular-Kids-SDK's SingularConfig has no limitAdvertisingIdentifiers support.
 
-        NSArray *brandedDomains = [config objectForKey:@"brandedDomains"];
-        if (brandedDomains && brandedDomains.count > 0) {
-            singularConfig.brandedDomains = brandedDomains;
-        }
 
-        singularConfig.enableLogging = [[config objectForKey:@"enableLogging"] boolValue];
-        int logLevel = [[config objectForKey:@"logLevel"] intValue];
-        singularConfig.logLevel = mapUnityLogLevelToiOS(logLevel);
+
+
+
+
+        singularConfigDict = config;
+        currentConfig = singularConfig;
 
         [Singular start:singularConfig];
         
@@ -477,6 +578,18 @@ extern "C" {
         return result;
     }
     
+
+
+
+
+
+
+
+
+
+
+
+    
     // Revenue methods
     void Revenue_(const char* currency, double amount) {
         [Singular revenue:[NSString stringWithUTF8String:currency] amount:amount];
@@ -559,6 +672,16 @@ extern "C" {
     bool GetLimitDataSharing_() {
         return [Singular getLimitDataSharing];
     }
+    
+
+
+
+
+
+
+
+
+
 
     /* Global Properties */
 
@@ -593,6 +716,37 @@ extern "C" {
     void ClearGlobalProperties_() {
         [Singular clearGlobalProperties];
     }
+
+    /* User Details */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* SKAN Methods */
 

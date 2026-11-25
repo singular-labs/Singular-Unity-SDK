@@ -31,8 +31,13 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.10.1-KIDS";
-        
+        private const string UNITY_VERSION      = "5.12.0";
+
+        private const string UNITY_WRAPPER_VERSION = UNITY_VERSION + "-KIDS";
+
+
+
+
         #endregion // init properties
         
         #region iOS-only
@@ -49,6 +54,10 @@ namespace Singular
         public static string fcmDeviceToken    = null;
         public string facebookAppId;
 
+
+
+
+
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
             static AndroidJavaClass  jclass;
@@ -63,6 +72,14 @@ namespace Singular
         private Dictionary<string, SingularGlobalProperty> globalProperties = new Dictionary<string, SingularGlobalProperty>();
         private static bool? limitDataSharing = null;
         private static string customUserId;
+
+
+
+
+
+
+
+
 
         #region Deeplinks
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
@@ -197,13 +214,27 @@ namespace Singular
             config.SetValue("sessionTimeoutSec", instance.sessionTimeoutSec);
             config.SetValue("customSdid", CustomSdid);
             config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
+
+
+
+
             config.SetValue("brandedDomains", instance.brandedDomains);
             config.SetValue("enableLogging", instance.enableLogging);
             config.SetValue("logLevel", instance.logLevel);
 
+
+
+
+
+
+
+
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
+
+
+
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
@@ -211,6 +242,9 @@ namespace Singular
         {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
+
+
+
 
         if (limitDataSharing != null)
         {
@@ -243,7 +277,7 @@ namespace Singular
 
         jniSingularUnityBridge.CallStatic("init", config.ToJsonString());
 
-        singular.CallStatic("setWrapperNameAndVersion", UNITY_WRAPPER_NAME, UNITY_VERSION);
+        singular.CallStatic("setWrapperNameAndVersion", UNITY_WRAPPER_NAME, UNITY_WRAPPER_VERSION);
     }
 
     private static void InitAndroidJavaClasses() {
@@ -338,6 +372,11 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern string GetAPID_();
+
+
+
+
+
 
     // Revenue functions
     [DllImport("__Internal")]
@@ -444,6 +483,20 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern bool GetLimitDataSharing_();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     [DllImport("__Internal")]
     private static extern void SkanRegisterAppForAdNetworkAttribution_();
@@ -567,7 +620,7 @@ namespace Singular
 #if UNITY_IOS
             RegisterDeferredDeepLinkHandler_();
 
-            SetWrapperNameAndVersion_(UNITY_WRAPPER_NAME, UNITY_VERSION);
+            SetWrapperNameAndVersion_(UNITY_WRAPPER_NAME, UNITY_WRAPPER_VERSION);
 
             return StartSingularSession_(config.ToJsonString());
 #endif
@@ -1185,7 +1238,20 @@ namespace Singular
 #endif
             return null;
         }
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         #region SDID
 
         public static void SetSingularSdidAccessorHandler(SingularSdidAccessorHandler handler)
@@ -1928,6 +1994,41 @@ namespace Singular
             return false;
         }
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
         public static void AdRevenue(SingularAdData adData)
         {
             try
@@ -1943,6 +2044,22 @@ namespace Singular
             {
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         #region Global Properties
 
@@ -2033,6 +2150,73 @@ namespace Singular
         }
 #endif
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         public static void SkanRegisterAppForAdNetworkAttribution()
         {

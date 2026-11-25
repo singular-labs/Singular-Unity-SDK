@@ -54,7 +54,6 @@ MonoBehaviour:
   enableLogging: 1
   logLevel: 3
   facebookAppId: 
-  collectOAID: 0
   limitedIdentifiersEnabled: 0
   ddlTimeoutSec: 0
   sessionTimeoutSec: 0

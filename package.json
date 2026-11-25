@@ -1,6 +1,6 @@
 {
     "name": "singular-unity-kids-package",
-    "version": "5.10.1",
+    "version": "5.12.0",
     "displayName": "Singular Kids",
     "description": "Singular Unity Kids Package",
     "type": "library",
@@ -11,10 +11,11 @@
         "name": "Singular Labs",
         "url": "https://github.com/singular-labs/Singular-Unity-SDK"
     },
-    "unity": "2019.4",
+    "unity": "2022.3",
     "dependencies":
     {
-        "com.unity.nuget.newtonsoft-json": "3.2.1"
+        "com.unity.nuget.newtonsoft-json": "3.2.1",
+        "com.unity.external-dependency-manager": "2.1.1"
     },
     "repository":
     {
