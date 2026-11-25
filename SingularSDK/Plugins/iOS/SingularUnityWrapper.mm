@@ -7,7 +7,9 @@
 
 #import <Singular/Singular.h>
 #import "SingularStateWrapper.h"
+
 #import <AdSupport/ASIdentifierManager.h>
+
 #include <exception>
 
 enum { __STRING__,__INT__,__LONG__,__FLOAT__,__DOUBLE__,__NULL__,__BOOL__,__ARRAY__,__DICTIONARY__};
@@ -157,6 +159,7 @@ static void handleConversionValuesUpdated(int value, int coarse, bool lock) {
     sendSdkMessage("ConversionValuesUpdated", jsonString);
 }
 
+
 static SingularUserDetails* userDetailsFromDictionary(NSDictionary *userDetailsDictionary) {
     if (![userDetailsDictionary isKindOfClass:[NSDictionary class]] || [userDetailsDictionary count] == 0) {
         return nil;
@@ -196,6 +199,7 @@ static SingularUserDetails* userDetailsFromDictionary(NSDictionary *userDetailsD
 
     return userDetails;
 }
+
 
 static NSDictionary* singularConfigDict;
 static SingularConfig* currentConfig;
@@ -249,8 +253,10 @@ static SingularConfig* buildSingularConfig(NSDictionary *config) {
         singularConfig.pushNotificationLinkPath = pushLinkPaths;
     }
     
+
     singularConfig.limitAdvertisingIdentifiers = [[config objectForKey:@"limitAdvertisingIdentifiers"] boolValue];
     singularConfig.collectIpv6Address = [[config objectForKey:@"collectIpv6Address"] boolValue];
+
     
     NSArray *brandedDomains = [config objectForKey:@"brandedDomains"];
     if (brandedDomains && brandedDomains.count > 0) {
@@ -285,8 +291,10 @@ static SingularConfig* buildSingularConfig(NSDictionary *config) {
     singularConfig.openUrl = url;
 
     // Keep the value set at runtime, which the SDK only stores on its live config.
+
     singularConfig.limitAdvertisingIdentifiers = currentConfig.limitAdvertisingIdentifiers;
     singularConfig.collectIpv6Address = currentConfig.collectIpv6Address;
+
 
     currentConfig = singularConfig;
 
@@ -353,10 +361,12 @@ extern "C" {
             [Singular setSessionTimeout:sessionTimeoutSec];
         }
 
+
         SingularUserDetails *userDetails = userDetailsFromDictionary([config objectForKey:@"userDetails"]);
         if (userDetails) {
             singularConfig.userDetails = userDetails;
         }
+
 
         singularConfigDict = config;
         currentConfig = singularConfig;
@@ -568,6 +578,7 @@ extern "C" {
         return result;
     }
     
+
     const char* GetIDFA_(){
         const char* str = [[[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString] UTF8String];
         if(str == NULL){
@@ -577,6 +588,7 @@ extern "C" {
         strcpy(result,str);
         return result;
     }
+
     
     // Revenue methods
     void Revenue_(const char* currency, double amount) {
@@ -661,6 +673,7 @@ extern "C" {
         return [Singular getLimitDataSharing];
     }
     
+
     void SetLimitAdvertisingIdentifiers_(bool isEnabled) {
         [Singular setLimitAdvertisingIdentifiers:isEnabled];
     }
@@ -668,6 +681,7 @@ extern "C" {
     void SetCollectIpv6Address_(bool isEnabled) {
         [Singular setCollectIpv6Address:isEnabled];
     }
+
 
     /* Global Properties */
 
@@ -705,6 +719,7 @@ extern "C" {
 
     /* User Details */
 
+
     void SetUserDetails_(const char* userDetailsJson) {
         if (!userDetailsJson) {
             NSLog(@"[SingularUnityBridge] SetUserDetails_ called with NULL user details, clearing the user details");
@@ -731,6 +746,7 @@ extern "C" {
     void ClearUserDetails_() {
         [Singular clearUserDetails];
     }
+
 
     /* SKAN Methods */
 

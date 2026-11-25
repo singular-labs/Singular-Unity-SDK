@@ -43,7 +43,9 @@ public class SingularPostBuild
         // Add following frameworks to your project
         pbxProject.AddFrameworkToProject(targetGuid, "Security.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "SystemConfiguration.framework", false);
+
         pbxProject.AddFrameworkToProject(targetGuid, "AdSupport.framework", false);
+
         pbxProject.AddFrameworkToProject(targetGuid, "WebKit.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "StoreKit.framework", false);
         pbxProject.AddFrameworkToProject(targetGuid, "AdServices.framework", true); // optional=true
@@ -113,7 +115,9 @@ public class SingularPostBuild: IPostGenerateGradleAndroidProject
             "android.permission.INTERNET",
             "BIND_GET_INSTALL_REFERRER_SERVICE",
             "com.android.vending.CHECK_LICENSE",
-            "com.google.android.gms.permission.AD_ID"
+
+            "com.google.android.gms.permission.AD_ID",
+
         };
 
         string ANDROID_NAME_ATTRIBUTE = "android__name"; // see doc inside below function: cleanManifestFile

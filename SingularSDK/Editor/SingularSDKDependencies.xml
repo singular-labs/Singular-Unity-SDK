@@ -1,12 +1,12 @@
 <dependencies>
   <androidPackages>
-    <androidPackage spec="com.singular.sdk:singular_sdk:12.17.0">
+    <androidPackage spec="com.singular.sdk:singular_sdk:12.18.0">
       <repositories>
         <repository>https://maven.singular.net</repository>
       </repositories>
     </androidPackage>
   </androidPackages>
-  <remoteSwiftPackage url="https://github.com/singular-labs/Singular-iOS-SDK.git" version="12.16.0">
+  <remoteSwiftPackage url="https://github.com/singular-labs/Singular-iOS-SDK.git" version="12.17.0">
     <swiftPackage name="Singular"/>
   </remoteSwiftPackage>
 </dependencies>

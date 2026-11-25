@@ -31,8 +31,13 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.11.0";
-        
+        private const string UNITY_VERSION      = "5.12.0";
+
+
+
+        private const string UNITY_WRAPPER_VERSION = UNITY_VERSION;
+
+
         #endregion // init properties
         
         #region iOS-only
@@ -48,9 +53,11 @@ namespace Singular
         #region Android-only
         public static string fcmDeviceToken    = null;
         public string facebookAppId;
+
         public bool collectOAID               = false;
-        
+
         private static string imei;
+
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
             static AndroidJavaClass  jclass;
@@ -65,11 +72,15 @@ namespace Singular
         private Dictionary<string, SingularGlobalProperty> globalProperties = new Dictionary<string, SingularGlobalProperty>();
         private static bool? limitDataSharing = null;
         private static string customUserId;
+
         public bool limitAdvertisingIdentifiers = false;
         public bool collectIpv6Address = true;
 
+
+
         private static SingularUserDetails userDetails = null;
-        
+
+
         #region Deeplinks
         public long ddlTimeoutSec = 0; // default value (0) sets to default timeout (60s)
         public long sessionTimeoutSec = 0; // default value (0) sets to default timeout (60s)
@@ -203,21 +214,27 @@ namespace Singular
             config.SetValue("sessionTimeoutSec", instance.sessionTimeoutSec);
             config.SetValue("customSdid", CustomSdid);
             config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
+
             config.SetValue("limitAdvertisingIdentifiers", instance.limitAdvertisingIdentifiers);
             config.SetValue("collectIpv6Address", instance.collectIpv6Address);
+
             config.SetValue("brandedDomains", instance.brandedDomains);
             config.SetValue("enableLogging", instance.enableLogging);
             config.SetValue("logLevel", instance.logLevel);
+
 
             if (userDetails != null)
             {
                 config.SetValue("userDetails", userDetails.ToDictionary());
             }
 
+
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
+
         config.SetValue("imei", imei);
+
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
@@ -225,9 +242,11 @@ namespace Singular
         {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
+
         config.SetValue("collectOAID", instance.collectOAID);
 
-        if (limitDataSharing != null) 
+
+        if (limitDataSharing != null)
         {
             config.SetValue("limitDataSharing", limitDataSharing);
         }
@@ -258,7 +277,7 @@ namespace Singular
 
         jniSingularUnityBridge.CallStatic("init", config.ToJsonString());
 
-        singular.CallStatic("setWrapperNameAndVersion", UNITY_WRAPPER_NAME, UNITY_VERSION);
+        singular.CallStatic("setWrapperNameAndVersion", UNITY_WRAPPER_NAME, UNITY_WRAPPER_VERSION);
     }
 
     private static void InitAndroidJavaClasses() {
@@ -354,8 +373,10 @@ namespace Singular
     [DllImport("__Internal")]
     private static extern string GetAPID_();
 
+
     [DllImport("__Internal")]
     private static extern string GetIDFA_();
+
 
     // Revenue functions
     [DllImport("__Internal")]
@@ -463,6 +484,7 @@ namespace Singular
     [DllImport("__Internal")]
     private static extern bool GetLimitDataSharing_();
 
+
     [DllImport("__Internal")]
     private static extern void SetLimitAdvertisingIdentifiers_(bool isEnabled);
 
@@ -474,6 +496,7 @@ namespace Singular
 
     [DllImport("__Internal")]
     private static extern void ClearUserDetails_();
+
 
     [DllImport("__Internal")]
     private static extern void SkanRegisterAppForAdNetworkAttribution_();
@@ -597,7 +620,7 @@ namespace Singular
 #if UNITY_IOS
             RegisterDeferredDeepLinkHandler_();
 
-            SetWrapperNameAndVersion_(UNITY_WRAPPER_NAME, UNITY_VERSION);
+            SetWrapperNameAndVersion_(UNITY_WRAPPER_NAME, UNITY_WRAPPER_VERSION);
 
             return StartSingularSession_(config.ToJsonString());
 #endif
@@ -1216,6 +1239,7 @@ namespace Singular
             return null;
         }
 
+
         public static string GetIDFA()
         {
             //only works for iOS. Will return null until Singular is initialized.
@@ -1226,6 +1250,7 @@ namespace Singular
 #endif
             return null;
         }
+
 
         #region SDID
 
@@ -1969,6 +1994,7 @@ namespace Singular
             return false;
         }
         
+
         public static void SetLimitAdvertisingIdentifiers(bool isEnabled)
         {
             if (Application.isEditor)
@@ -2000,6 +2026,7 @@ namespace Singular
         }
 #endif
         }
+
         
 
         public static void AdRevenue(SingularAdData adData)
@@ -2018,6 +2045,7 @@ namespace Singular
             }
         }
 
+
 #if UNITY_ANDROID
     public static void SetIMEI(string imeiData) {
         if (Application.isEditor) {
@@ -2031,6 +2059,7 @@ namespace Singular
         }
     }
 #endif
+
 
         #region Global Properties
 
@@ -2122,6 +2151,7 @@ namespace Singular
 #endif
         }
 
+
         public static void SetUserDetails(SingularUserDetails details)
         {
             if (Application.isEditor)
@@ -2186,6 +2216,7 @@ namespace Singular
         }
 #endif
         }
+
 
         public static void SkanRegisterAppForAdNetworkAttribution()
         {
